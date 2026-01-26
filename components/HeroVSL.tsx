@@ -5,8 +5,21 @@ export const HeroVSL: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
 
-  const toggleMute = () => {
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent toggling play when clicking mute
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
       setIsMuted(!isMuted);
@@ -81,7 +94,7 @@ export const HeroVSL: React.FC = () => {
         </h1>
 
         {/* Subheadline - UPDATED: Focus on Freedom/Automation */}
-        <p className="text-lg md:text-2xl text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed font-light animate-fade-in-up drop-shadow-lg" style={{ animationDelay: '0.6s' }}>
+        <p className="text-lg md:text-2xl text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed font-light animate-fade-in-up drop-shadow-lg" style={{ animationDelay: '0.6s'}>
           La verdadera libertad financiera es <strong>automática</strong>. <br className="hidden md:block" />
           Nuestro sistema opera los mercados 24/7 con precisión institucional, permitiéndote generar riqueza sin estar pegado a una pantalla.
         </p>
@@ -101,7 +114,8 @@ export const HeroVSL: React.FC = () => {
           <div className="absolute -inset-2 bg-gradient-to-r from-brand-gold/30 via-white/10 to-brand-gold/30 rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition duration-1000 animate-pulse-slow"></div>
 
           <div className="relative rounded-xl overflow-hidden bg-[#000] border border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:scale-[1.01] transition-transform duration-700">
-            <div className="relative w-full h-full bg-black">
+            <div className="relative w-full h-full bg-black cursor-pointer group-video" onClick={togglePlay}>
+              
               {/* Fallback/Poster while loading */}
               <div
                 className={`absolute inset-0 bg-brand-dark flex items-center justify-center transition-opacity duration-1000 z-10 ${videoLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
@@ -113,6 +127,15 @@ export const HeroVSL: React.FC = () => {
                 </svg>
               </div>
 
+              {/* Play Overlay (When Paused) */}
+              {!isPlaying && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-all duration-300 animate-fade-in">
+                   <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full bg-brand-gold/90 text-brand-dark pl-2 shadow-[0_0_30px_rgba(232,193,112,0.6)] hover:scale-110 transition-transform">
+                    <svg className="w-8 h-8 md:w-10 md:h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  </div>
+                </div>
+              )}
+
               <video
                 ref={videoRef}
                 src="https://pub-a60da4810fdd4dd3afcaf935f382175e.r2.dev/vsl_final_1080p_v2.mp4"
@@ -123,6 +146,8 @@ export const HeroVSL: React.FC = () => {
                 loop
                 onCanPlay={() => setVideoLoaded(true)}
                 onLoadedData={() => setVideoLoaded(true)}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
               />
             </div>
 
@@ -213,6 +238,6 @@ export const HeroVSL: React.FC = () => {
           will-change: transform, opacity, filter;
         }
       `}</style>
-    </section>
+    </section >
   );
 };
