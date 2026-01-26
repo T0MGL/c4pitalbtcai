@@ -1,7 +1,17 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { Button } from './Button';
 
 export const HeroVSL: React.FC = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(!isMuted);
+    }
+  };
+
   const openForm = () => {
     window.dispatchEvent(new CustomEvent('open-qualification-form'));
   };
@@ -19,7 +29,7 @@ export const HeroVSL: React.FC = () => {
 
   return (
     <section id="hero-section" className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 lg:pt-44 lg:pb-32 overflow-hidden bg-brand-dark">
-      
+
       {/* Light Source - Enhanced */}
       <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-brand-gold/10 blur-[120px] rounded-full pointer-events-none z-0 mix-blend-screen animate-pulse-slow"></div>
       <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none z-0 mix-blend-screen"></div>
@@ -27,7 +37,7 @@ export const HeroVSL: React.FC = () => {
       {/* Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         {particles.map((p, i) => (
-          <div 
+          <div
             key={i}
             className={`absolute bg-brand-gold rounded-full shadow-[0_0_10px_rgba(232,193,112,0.3)] will-change-transform ${p.showOnMobile ? 'block' : 'hidden md:block'}`}
             style={{
@@ -42,78 +52,93 @@ export const HeroVSL: React.FC = () => {
           />
         ))}
       </div>
-      
+
       {/* Main Content */}
-      <div 
+      <div
         className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 flex flex-col items-center w-full"
       >
-        
+
         {/* Badge - UPDATED: Focus on Exclusivity and Private Strategy */}
         <div className="flex items-center gap-3 mb-10 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-brand-gold"></div>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-gold/30 bg-brand-gold/10 backdrop-blur-md shadow-glow-gold">
-                <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-gold opacity-100"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-gold"></span>
-                </span>
-                <span className="text-[11px] md:text-xs font-bold text-brand-gold tracking-[0.2em] uppercase shadow-black drop-shadow-md">Acceso Exclusivo • Estrategia Privada</span>
-            </div>
-            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-brand-gold"></div>
+          <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-brand-gold"></div>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-gold/30 bg-brand-gold/10 backdrop-blur-md shadow-glow-gold">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-gold opacity-100"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-gold"></span>
+            </span>
+            <span className="text-[11px] md:text-xs font-bold text-brand-gold tracking-[0.2em] uppercase shadow-black drop-shadow-md">Acceso Exclusivo • Estrategia Privada</span>
+          </div>
+          <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-brand-gold"></div>
         </div>
-        
+
         {/* Headline */}
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-medium text-white leading-[1.1] mb-8 tracking-tight drop-shadow-xl">
           <span className="block animate-fade-in-up" style={{ animationDelay: '0.2s' }}>Deja de Operar con Emociones.</span>
           <span className="block animate-fade-in-up relative mt-2" style={{ animationDelay: '0.4s' }}>
-             <span className="text-transparent bg-clip-text bg-metallic-gold drop-shadow-[0_0_25px_rgba(232,193,112,0.4)]">Empieza a Operar con Ventaja.</span>
+            <span className="text-transparent bg-clip-text bg-metallic-gold drop-shadow-[0_0_25px_rgba(232,193,112,0.4)]">Empieza a Operar con Ventaja.</span>
           </span>
         </h1>
-        
+
         {/* Subheadline - UPDATED: Focus on Freedom/Automation */}
         <p className="text-lg md:text-2xl text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed font-light animate-fade-in-up drop-shadow-lg" style={{ animationDelay: '0.6s' }}>
-          La verdadera libertad financiera es <strong>automática</strong>. <br className="hidden md:block"/>
+          La verdadera libertad financiera es <strong>automática</strong>. <br className="hidden md:block" />
           Nuestro sistema opera los mercados 24/7 con precisión institucional, permitiéndote generar riqueza sin estar pegado a una pantalla.
         </p>
 
         {/* Trust Badges */}
         <div className="flex flex-wrap justify-center gap-6 md:gap-12 mb-16 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-           {['Tu Dinero, Tu Control', 'Resultados Verificados', '100% Manos Libres'].map((text, i) => (
-             <div key={i} className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10 hover:border-brand-gold/50 transition-colors duration-300">
-                <svg className="w-4 h-4 text-brand-gold" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                <span className="text-xs uppercase tracking-widest font-bold text-slate-200">{text}</span>
-             </div>
-           ))}
+          {['Tu Dinero, Tu Control', 'Resultados Verificados', '100% Manos Libres'].map((text, i) => (
+            <div key={i} className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10 hover:border-brand-gold/50 transition-colors duration-300">
+              <svg className="w-4 h-4 text-brand-gold" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              <span className="text-xs uppercase tracking-widest font-bold text-slate-200">{text}</span>
+            </div>
+          ))}
         </div>
 
         {/* Video Container */}
         <div className="relative w-full aspect-video max-w-5xl mx-auto mb-16 animate-fade-in-up group perspective-1000" style={{ animationDelay: '1s' }}>
-            <div className="absolute -inset-2 bg-gradient-to-r from-brand-gold/30 via-white/10 to-brand-gold/30 rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition duration-1000 animate-pulse-slow"></div>
-            
-            <div className="relative rounded-xl overflow-hidden bg-[#000] border border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:scale-[1.01] transition-transform duration-700">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1611974765270-ca1258634369?q=80&w=2664&auto=format&fit=crop')] bg-cover bg-center opacity-60 mix-blend-overlay hover:mix-blend-normal transition-all duration-700"></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/90 via-transparent to-transparent"></div>
-                
-                <div className="absolute inset-0 flex items-center justify-center cursor-pointer z-20">
-                    <div className="relative group/btn">
-                        <div className="absolute inset-0 bg-brand-gold/40 rounded-full blur-2xl group-hover/btn:blur-3xl transition-all duration-500"></div>
-                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-brand-gold/30 bg-black/40 backdrop-blur-md flex items-center justify-center pl-2 transition-transform duration-300 group-hover/btn:scale-95 group-active/btn:scale-90 shadow-[0_0_30px_rgba(232,193,112,0.2)]">
-                            <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-brand-gold border-b-[10px] border-b-transparent filter drop-shadow-[0_0_10px_rgba(232,193,112,0.8)]"></div>
-                        </div>
-                    </div>
-                </div>
+          <div className="absolute -inset-2 bg-gradient-to-r from-brand-gold/30 via-white/10 to-brand-gold/30 rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition duration-1000 animate-pulse-slow"></div>
 
-                <div className="absolute top-6 left-6 flex items-center gap-2 z-20">
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_#ef4444]"></div>
-                    <span className="text-[10px] uppercase tracking-widest text-white font-bold drop-shadow-md">Video Análisis</span>
-                </div>
-                
-                <div className="absolute bottom-0 left-0 right-0 p-6 flex justify-between items-end bg-gradient-to-t from-black via-black/80 to-transparent z-20">
-                   <div>
-                       <p className="text-white font-bold text-xl mb-1 text-shadow">Ver el Sistema Operando en Vivo</p>
-                       <p className="text-brand-gold text-sm font-mono">Demostración de Resultados Reales</p>
-                   </div>
-                </div>
+          <div className="relative rounded-xl overflow-hidden bg-[#000] border border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:scale-[1.01] transition-transform duration-700">
+            <video
+              ref={videoRef}
+              src="https://pub-a60da4810fdd4dd3afcaf935f382175e.r2.dev/vsl_final_1080p_v2.mp4"
+              className="w-full h-full object-cover"
+              autoPlay
+              muted={isMuted}
+              playsInline
+              loop
+            />
+
+            {/* Sound Badge */}
+            <div
+              onClick={toggleMute}
+              className="absolute top-6 right-6 z-30 cursor-pointer transform hover:scale-105 transition-transform duration-300"
+            >
+              <div className={`flex items-center gap-3 px-5 py-2.5 rounded-full border backdrop-blur-md shadow-lg transition-all duration-300 ${isMuted ? 'bg-red-500/90 border-red-400 hover:bg-red-600' : 'bg-black/60 border-brand-gold/50 hover:bg-black/80'}`}>
+                {isMuted ? (
+                  <>
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                    </span>
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">Activar Sonido</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+                    <span className="text-xs font-bold text-brand-gold uppercase tracking-wider">Sonido Activado</span>
+                  </>
+                )}
+              </div>
             </div>
+
+            <div className="absolute top-6 left-6 flex items-center gap-2 z-20 pointer-events-none">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_#ef4444]"></div>
+              <span className="text-[10px] uppercase tracking-widest text-white font-bold drop-shadow-md">En Vivo</span>
+            </div>
+          </div>
         </div>
 
         {/* CTA */}
@@ -122,14 +147,14 @@ export const HeroVSL: React.FC = () => {
             QUIERO MI LIBERTAD FINANCIERA
           </Button>
           <div className="flex items-center gap-6 mt-6 opacity-70">
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <svg className="w-3 h-3 text-brand-green" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                  Tus llaves, tus monedas
-              </span>
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <svg className="w-3 h-3 text-brand-green" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                  Sin Bloqueos de Fondos
-              </span>
+            <span className="text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <svg className="w-3 h-3 text-brand-green" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              Tus llaves, tus monedas
+            </span>
+            <span className="text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <svg className="w-3 h-3 text-brand-green" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              Sin Bloqueos de Fondos
+            </span>
           </div>
         </div>
       </div>
