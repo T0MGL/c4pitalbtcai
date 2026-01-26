@@ -23,8 +23,11 @@ const StickyCTA = lazy(() => import('./components/StickyCTA').then(module => ({ 
 const QualificationForm = lazy(() => import('./components/QualificationForm').then(module => ({ default: module.QualificationForm })));
 const CRM = lazy(() => import('./components/CRM').then(module => ({ default: module.CRM })));
 
+import { Preloader } from './components/Preloader';
+
 function App() {
   const [view, setView] = useState('home');
+  const [showPreloader, setShowPreloader] = useState(true);
 
   useEffect(() => {
     // 1. ROUTING SIMPE
@@ -40,46 +43,46 @@ function App() {
     // Esto descarga los siguientes bloques en segundo plano INMEDIATAMENTE después
     // de que el sitio carga, sin esperar al scroll del usuario.
     const preloadApp = async () => {
-        // Prioridad 1: Lo que está justo debajo del Hero (Bloque Lógico)
-        // Pequeño delay para dejar que el navegador pinte el Hero primero
-        await new Promise(r => setTimeout(r, 100)); 
-        import('./components/Performance');
-        import('./components/SystemSpecs');
+      // Prioridad 1: Lo que está justo debajo del Hero (Bloque Lógico)
+      // Pequeño delay para dejar que el navegador pinte el Hero primero
+      await new Promise(r => setTimeout(r, 100));
+      import('./components/Performance');
+      import('./components/SystemSpecs');
 
-        // Prioridad 2: Gráficas pesadas y Calculadora (Bloque Interactivo)
-        await new Promise(r => setTimeout(r, 300));
-        import('./components/WealthSimulator'); 
-        import('./components/VerifiedResults'); // Recharts es pesado, lo cargamos aquí
+      // Prioridad 2: Gráficas pesadas y Calculadora (Bloque Interactivo)
+      await new Promise(r => setTimeout(r, 300));
+      import('./components/WealthSimulator');
+      import('./components/VerifiedResults'); // Recharts es pesado, lo cargamos aquí
 
-        // Prioridad 3: Resto de la página (Bloque Social/Venta)
-        await new Promise(r => setTimeout(r, 500));
-        import('./components/Features');
-        import('./components/Comparison');
-        import('./components/Testimonials');
-        import('./components/Pricing');
-        
-        // Prioridad 4: Footer y Modales
-        await new Promise(r => setTimeout(r, 1000));
-        import('./components/Faq');
-        import('./components/Footer');
-        import('./components/StickyCTA');
-        import('./components/QualificationForm');
+      // Prioridad 3: Resto de la página (Bloque Social/Venta)
+      await new Promise(r => setTimeout(r, 500));
+      import('./components/Features');
+      import('./components/Comparison');
+      import('./components/Testimonials');
+      import('./components/Pricing');
+
+      // Prioridad 4: Footer y Modales
+      await new Promise(r => setTimeout(r, 1000));
+      import('./components/Faq');
+      import('./components/Footer');
+      import('./components/StickyCTA');
+      import('./components/QualificationForm');
     };
 
     // Ejecutar precarga solo si no estamos en la vista de CRM
     if (window.location.hash !== '#crm') {
-        preloadApp();
+      preloadApp();
     }
 
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
   if (view === 'crm') {
-      return (
-        <Suspense fallback={<div className="min-h-screen bg-brand-dark flex items-center justify-center text-brand-gold animate-pulse">Cargando Sistema...</div>}>
-            <CRM />
-        </Suspense>
-      );
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-brand-dark flex items-center justify-center text-brand-gold animate-pulse">Cargando Sistema...</div>}>
+        <CRM />
+      </Suspense>
+    );
   }
 
   return (
@@ -91,16 +94,21 @@ function App() {
          evitando saltos bruscos.
       */}
 
+      {/* PRELOADER */}
+      {showPreloader && (
+        <Preloader onFinish={() => setShowPreloader(false)} />
+      )}
+
       {/* BLOQUE 1: INMEDIATO */}
       <Navbar />
       <HeroVSL />
-      
+
       <div className="relative">
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-brand-gold/50 to-transparent"></div>
-        
+
         {/* BLOQUE 2: RESULTADOS Y TESIS */}
         <Suspense fallback={<div className="w-full min-h-[600px] bg-brand-dark" />}>
-            <Performance />
+          <Performance />
         </Suspense>
       </div>
 
@@ -146,7 +154,7 @@ function App() {
       <Suspense fallback={null}>
         <StickyCTA />
       </Suspense>
-      
+
       <Suspense fallback={null}>
         <QualificationForm />
       </Suspense>

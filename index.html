@@ -1,94 +1,111 @@
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Capital BTC AI | Estrategia Privada de Trading</title>
-    
-    <!-- PERFORMANCE: CRITICAL ASSETS PRELOAD -->
-    <!-- 1. Hero Background Image (LCP Optimization) -->
-    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1611974765270-ca1258634369?q=80&w=2664&auto=format&fit=crop" fetchpriority="high">
-    
-    <!-- 2. Fonts Preconnect -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://images.unsplash.com">
-    
-    <!-- FAVICON -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'%3E%3Cdefs%3E%3ClinearGradient id='logo-gradient' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23F5E6C8' /%3E%3Cstop offset='40%25' stop-color='%23E8C170' /%3E%3Cstop offset='100%25' stop-color='%23B38B3A' /%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M 88 32 L 72 10 L 28 10 L 12 50 L 28 90 L 72 90 L 88 68' stroke='url(%23logo-gradient)' stroke-width='8' stroke-linecap='square' stroke-linejoin='miter'/%3E%3Cpath d='M 50 32 L 68 50 L 50 68 L 32 50 Z' fill='url(%23logo-gradient)' /%3E%3Ccircle cx='88' cy='32' r='3' fill='%23F5E6C8' /%3E%3Ccircle cx='88' cy='68' r='3' fill='%23F5E6C8' /%3E%3C/svg%3E" />
 
-    <script src="https://cdn.tailwindcss.com"></script>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capital BTC AI | Estrategia Privada de Trading</title>
 
-    <!-- FONTS -->
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Montserrat', 'sans-serif'], 
-              serif: ['Montserrat', 'sans-serif'], 
-              mono: ['IBM Plex Sans', 'sans-serif'], 
-            },
-            colors: {
-              brand: {
-                dark: '#050A15', 
-                card: '#0B101B', 
-                gold: '#E8C170', 
-                goldLight: '#F5E6C8',
-                goldDark: '#B38B3A',
-                goldHover: '#F0D088',
-                green: '#4ADE80', 
-                red: '#F87171',
-              }
-            },
-            backgroundImage: {
-              'metallic-gold': 'linear-gradient(135deg, #F5E6C8 0%, #E8C170 50%, #B38B3A 100%)',
-              'metallic-text': 'linear-gradient(to bottom, #FFFBF0, #E8C170)',
-              'glow-conic': 'conic-gradient(from 180deg at 50% 50%, #2a8af6 0deg, #a853ba 180deg, #e92a67 360deg)',
-            },
-            boxShadow: {
-              'glow-gold': '0 0 20px rgba(232, 193, 112, 0.3)',
-              'glow-card': '0 0 40px -10px rgba(0, 0, 0, 0.5)',
-            },
-            animation: {
-              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              'float': 'float 5s ease-in-out infinite',
-            },
-            keyframes: {
-              float: {
-                '0%, 100%': { transform: 'translateY(0)' },
-                '50%': { transform: 'translateY(-10px)' },
-              }
+  <!-- PERFORMANCE: CRITICAL ASSETS PRELOAD -->
+  <!-- 1. Hero Background Image (LCP Optimization) -->
+  <!-- 1. Hero Background Image (LCP Optimization) - REMOVED: Image not used in initial viewport -->
+  <!-- <link rel="preload" as="image" href="..." fetchpriority="high"> -->
+
+  <!-- 2. Fonts Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com">
+
+  <!-- FAVICON -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'%3E%3Cdefs%3E%3ClinearGradient id='logo-gradient' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23F5E6C8' /%3E%3Cstop offset='40%25' stop-color='%23E8C170' /%3E%3Cstop offset='100%25' stop-color='%23B38B3A' /%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M 88 32 L 72 10 L 28 10 L 12 50 L 28 90 L 72 90 L 88 68' stroke='url(%23logo-gradient)' stroke-width='8' stroke-linecap='square' stroke-linejoin='miter'/%3E%3Cpath d='M 50 32 L 68 50 L 50 68 L 32 50 Z' fill='url(%23logo-gradient)' /%3E%3Ccircle cx='88' cy='32' r='3' fill='%23F5E6C8' /%3E%3Ccircle cx='88' cy='68' r='3' fill='%23F5E6C8' /%3E%3C/svg%3E" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- FONTS -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Montserrat:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Montserrat', 'sans-serif'],
+            serif: ['Montserrat', 'sans-serif'],
+            mono: ['IBM Plex Sans', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#050A15',
+              card: '#0B101B',
+              gold: '#E8C170',
+              goldLight: '#F5E6C8',
+              goldDark: '#B38B3A',
+              goldHover: '#F0D088',
+              green: '#4ADE80',
+              red: '#F87171',
             }
           },
+          backgroundImage: {
+            'metallic-gold': 'linear-gradient(135deg, #F5E6C8 0%, #E8C170 50%, #B38B3A 100%)',
+            'metallic-text': 'linear-gradient(to bottom, #FFFBF0, #E8C170)',
+            'glow-conic': 'conic-gradient(from 180deg at 50% 50%, #2a8af6 0deg, #a853ba 180deg, #e92a67 360deg)',
+          },
+          boxShadow: {
+            'glow-gold': '0 0 20px rgba(232, 193, 112, 0.3)',
+            'glow-card': '0 0 40px -10px rgba(0, 0, 0, 0.5)',
+          },
+          animation: {
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 5s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            }
+          }
         },
-      }
-    </script>
-    <style>
-      ::-webkit-scrollbar { width: 6px; }
-      ::-webkit-scrollbar-track { background: #050A15; }
-      ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-      ::-webkit-scrollbar-thumb:hover { background: #E8C170; }
-      
-      .text-gradient-gold {
-        background: linear-gradient(to bottom, #FFFFFF, #E8C170);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        color: transparent;
-        text-shadow: 0 2px 10px rgba(232, 193, 112, 0.2);
-      }
-      
-      .glass-panel {
-        background: rgba(11, 16, 27, 0.7);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-      }
-    </style>
-<script type="importmap">
+      },
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #050A15;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #E8C170;
+    }
+
+    .text-gradient-gold {
+      background: linear-gradient(to bottom, #FFFFFF, #E8C170);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 2px 10px rgba(232, 193, 112, 0.2);
+    }
+
+    .glass-panel {
+      background: rgba(11, 16, 27, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+  <script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@^19.2.3",
@@ -99,10 +116,12 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+
 </head>
-  <body class="bg-brand-dark text-slate-200 antialiased selection:bg-brand-gold selection:text-brand-dark font-sans">
-    <div id="root"></div>
+
+<body class="bg-brand-dark text-slate-200 antialiased selection:bg-brand-gold selection:text-brand-dark font-sans">
+  <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

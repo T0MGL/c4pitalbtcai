@@ -4,6 +4,7 @@ import { Button } from './Button';
 export const HeroVSL: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   const toggleMute = () => {
     if (videoRef.current) {
@@ -100,39 +101,47 @@ export const HeroVSL: React.FC = () => {
           <div className="absolute -inset-2 bg-gradient-to-r from-brand-gold/30 via-white/10 to-brand-gold/30 rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition duration-1000 animate-pulse-slow"></div>
 
           <div className="relative rounded-xl overflow-hidden bg-[#000] border border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:scale-[1.01] transition-transform duration-700">
-            <video
-              ref={videoRef}
-              src="https://pub-a60da4810fdd4dd3afcaf935f382175e.r2.dev/vsl_final_1080p_v2.mp4"
-              className="w-full h-full object-cover"
-              autoPlay
-              muted={isMuted}
-              playsInline
-              loop
-            />
-
-            {/* Sound Badge */}
-            <div
-              onClick={toggleMute}
-              className="absolute top-6 right-6 z-30 cursor-pointer transform hover:scale-105 transition-transform duration-300"
-            >
-              <div className={`flex items-center gap-3 px-5 py-2.5 rounded-full border backdrop-blur-md shadow-lg transition-all duration-300 ${isMuted ? 'bg-red-500/90 border-red-400 hover:bg-red-600' : 'bg-black/60 border-brand-gold/50 hover:bg-black/80'}`}>
-                {isMuted ? (
-                  <>
-                    <span className="relative flex h-3 w-3">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-                    </span>
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">Activar Sonido</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
-                    <span className="text-xs font-bold text-brand-gold uppercase tracking-wider">Sonido Activado</span>
-                  </>
-                )}
+            <div className="relative w-full h-full bg-black">
+              {/* Fallback/Poster while loading */}
+              <div
+                className={`absolute inset-0 bg-brand-dark flex items-center justify-center transition-opacity duration-1000 z-10 ${videoLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-dark via-[#1a1f2e] to-brand-dark animate-pulse"></div>
+                <svg className="w-12 h-12 text-brand-gold/20 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
               </div>
+
+              <video
+                ref={videoRef}
+                src="https://pub-a60da4810fdd4dd3afcaf935f382175e.r2.dev/vsl_final_1080p_v2.mp4"
+                className={`w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+                autoPlay
+                muted={isMuted}
+                playsInline
+                loop
+                onCanPlay={() => setVideoLoaded(true)}
+                onLoadedData={() => setVideoLoaded(true)}
+              />
             </div>
+
+            {/* Sound Badge - Only shows when muted */}
+            {isMuted && (
+              <div
+                onClick={toggleMute}
+                className="absolute top-4 right-4 z-30 cursor-pointer animate-fade-in"
+              >
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 border border-white/10 backdrop-blur-md hover:bg-black/80 hover:border-brand-gold/50 transition-all duration-300 group-badge">
+                  <div className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-gold opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-gold"></span>
+                  </div>
+                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
+                  <span className="text-[10px] font-medium text-slate-200 uppercase tracking-widest group-hover-badge:text-brand-gold transition-colors">Activar Sonido</span>
+                </div>
+              </div>
+            )}
 
             <div className="absolute top-6 left-6 flex items-center gap-2 z-20 pointer-events-none">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_#ef4444]"></div>
