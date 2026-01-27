@@ -48,16 +48,16 @@ function App() {
       import('./components/Performance');
       import('./components/SystemSpecs');
 
-      // Prioridad 2: Gráficas pesadas y Calculadora (Bloque Interactivo)
+      // Prioridad 2: Gráficas pesadas, Pricing y Calculadora (Bloque Interactivo)
       await new Promise(r => setTimeout(r, 300));
       import('./components/WealthSimulator');
+      import('./components/Pricing');
 
       // Prioridad 3: Resto de la página (Bloque Social/Venta)
       await new Promise(r => setTimeout(r, 500));
       import('./components/Features');
       import('./components/Comparison');
       import('./components/Testimonials');
-      import('./components/Pricing');
 
       // Prioridad 4: Footer y Modales
       await new Promise(r => setTimeout(r, 1000));
@@ -119,6 +119,10 @@ function App() {
         <WealthSimulator />
       </Suspense>
 
+      <Suspense fallback={<div className="w-full min-h-[600px] bg-brand-dark" />}>
+        <Pricing />
+      </Suspense>
+
       <Suspense fallback={<div className="w-full min-h-[500px] bg-brand-dark" />}>
         <Features />
       </Suspense>
@@ -130,10 +134,6 @@ function App() {
 
       <Suspense fallback={<div className="w-full min-h-[400px] bg-brand-dark" />}>
         <Testimonials />
-      </Suspense>
-
-      <Suspense fallback={<div className="w-full min-h-[600px] bg-brand-dark" />}>
-        <Pricing />
       </Suspense>
 
       <Suspense fallback={<div className="w-full min-h-[400px] bg-brand-dark" />}>
