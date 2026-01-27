@@ -13,7 +13,6 @@ const Performance = lazy(() => import('./components/Performance').then(module =>
 const SystemSpecs = lazy(() => import('./components/SystemSpecs').then(module => ({ default: module.SystemSpecs })));
 const WealthSimulator = lazy(() => import('./components/WealthSimulator').then(module => ({ default: module.WealthSimulator })));
 const Features = lazy(() => import('./components/Features').then(module => ({ default: module.Features })));
-const VerifiedResults = lazy(() => import('./components/VerifiedResults').then(module => ({ default: module.VerifiedResults })));
 const Comparison = lazy(() => import('./components/Comparison').then(module => ({ default: module.Comparison })));
 const Testimonials = lazy(() => import('./components/Testimonials').then(module => ({ default: module.Testimonials })));
 const Pricing = lazy(() => import('./components/Pricing').then(module => ({ default: module.Pricing })));
@@ -52,7 +51,6 @@ function App() {
       // Prioridad 2: Gráficas pesadas y Calculadora (Bloque Interactivo)
       await new Promise(r => setTimeout(r, 300));
       import('./components/WealthSimulator');
-      import('./components/VerifiedResults'); // Recharts es pesado, lo cargamos aquí
 
       // Prioridad 3: Resto de la página (Bloque Social/Venta)
       await new Promise(r => setTimeout(r, 500));
@@ -123,10 +121,6 @@ function App() {
 
       <Suspense fallback={<div className="w-full min-h-[500px] bg-brand-dark" />}>
         <Features />
-      </Suspense>
-
-      <Suspense fallback={<div className="w-full min-h-[600px] bg-brand-dark" />}>
-        <VerifiedResults />
       </Suspense>
 
       {/* BLOQUE 4: CIERRE Y PRUEBA SOCIAL */}

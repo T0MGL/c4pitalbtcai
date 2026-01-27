@@ -86,18 +86,9 @@ export const HeroVSL: React.FC = () => {
         </div>
 
         {/* Headline */}
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-medium text-white leading-[1.1] mb-8 tracking-tight drop-shadow-xl">
-          <span className="block animate-fade-in-up" style={{ animationDelay: '0.2s' }}>Deja de Operar con Emociones.</span>
-          <span className="block animate-fade-in-up relative mt-2" style={{ animationDelay: '0.4s' }}>
-            <span className="text-transparent bg-clip-text bg-metallic-gold drop-shadow-[0_0_25px_rgba(232,193,112,0.4)]">Empieza a Operar con Ventaja.</span>
-          </span>
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-medium text-white leading-[1.1] mb-12 tracking-tight drop-shadow-xl animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+          El robot que <span className="text-transparent bg-clip-text bg-metallic-gold drop-shadow-[0_0_25px_rgba(232,193,112,0.4)]">no todos</span> pueden tener.
         </h1>
-
-        {/* Subheadline - UPDATED: Focus on Freedom/Automation */}
-        <p className="text-lg md:text-2xl text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed font-light animate-fade-in-up drop-shadow-lg" style={{ animationDelay: '0.6s'}>
-          La verdadera libertad financiera es <strong>automática</strong>. <br className="hidden md:block" />
-          Nuestro sistema opera los mercados 24/7 con precisión institucional, permitiéndote generar riqueza sin estar pegado a una pantalla.
-        </p>
 
         {/* Trust Badges */}
         <div className="flex flex-wrap justify-center gap-6 md:gap-12 mb-16 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
@@ -114,22 +105,29 @@ export const HeroVSL: React.FC = () => {
           <div className="absolute -inset-2 bg-gradient-to-r from-brand-gold/30 via-white/10 to-brand-gold/30 rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition duration-1000 animate-pulse-slow"></div>
 
           <div className="relative rounded-xl overflow-hidden bg-[#000] border border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:scale-[1.01] transition-transform duration-700">
-            <div className="relative w-full h-full bg-black cursor-pointer group-video" onClick={togglePlay}>
+            {/* 1. CLICK LAYER - Explicit separate layer for handling clicks */}
+            <div 
+              className="absolute inset-0 z-10 cursor-pointer" 
+              onClick={togglePlay}
+              aria-label={isPlaying ? "Pausar video" : "Reproducir video"}
+            ></div>
+
+            <div className="relative w-full h-full bg-black">
               
               {/* Fallback/Poster while loading */}
               <div
-                className={`absolute inset-0 bg-brand-dark flex items-center justify-center transition-opacity duration-1000 z-10 ${videoLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                className={`absolute inset-0 bg-brand-dark flex items-center justify-center transition-opacity duration-1000 z-0 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-brand-dark via-[#1a1f2e] to-brand-dark animate-pulse"></div>
-                <svg className="w-12 h-12 text-brand-gold/20 animate-spin" fill="none" viewBox="0 0 24 24">
+                <svg className="w-12 h-12 text-brand-gold/20 animate-spin relative z-10" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </div>
 
-              {/* Play Overlay (When Paused) */}
+              {/* Play Overlay (When Paused) - Sits below click layer visually but visible */}
               {!isPlaying && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-all duration-300 animate-fade-in">
+                <div className="absolute inset-0 z-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-all duration-300 animate-fade-in pointer-events-none">
                    <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full bg-brand-gold/90 text-brand-dark pl-2 shadow-[0_0_30px_rgba(232,193,112,0.6)] hover:scale-110 transition-transform">
                     <svg className="w-8 h-8 md:w-10 md:h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                   </div>
@@ -149,9 +147,40 @@ export const HeroVSL: React.FC = () => {
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
               />
+
+              {/* CONTROLS BAR (Visible on Hover/Pause) */}
+              <div 
+                className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 to-transparent transition-opacity duration-300 flex items-center justify-between gap-4 z-20 pointer-events-none ${isPlaying ? 'opacity-0 hover:opacity-100 group-hover:opacity-100' : 'opacity-100'}`}
+              >
+                 {/* Left: Play/Pause */}
+                 <button 
+                  onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+                  className="pointer-events-auto text-white hover:text-brand-gold transition-colors"
+                  aria-label={isPlaying ? "Pausar" : "Reproducir"}
+                 >
+                   {isPlaying ? (
+                     <svg className="w-6 h-6 md:w-8 md:h-8 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                   ) : (
+                     <svg className="w-6 h-6 md:w-8 md:h-8 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                   )}
+                 </button>
+
+                 {/* Right: Mute/Unmute */}
+                 <button 
+                  onClick={toggleMute}
+                  className="pointer-events-auto text-white hover:text-brand-gold transition-colors flex items-center gap-2"
+                 >
+                    <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:block">{isMuted ? 'Activar Sonido' : 'Silenciar'}</span>
+                    {isMuted ? (
+                      <svg className="w-6 h-6 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
+                    ) : (
+                      <svg className="w-6 h-6 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+                    )}
+                 </button>
+              </div>
             </div>
 
-            {/* Sound Badge - Only shows when muted */}
+            {/* Sound Badge - Only shows when muted - Z-30 to be above Click Layer */}
             {isMuted && (
               <div
                 onClick={toggleMute}
@@ -178,16 +207,20 @@ export const HeroVSL: React.FC = () => {
         {/* CTA */}
         <div className="flex flex-col items-center animate-fade-in-up" style={{ animationDelay: '1.2s' }}>
           <Button onClick={openForm} pulse className="min-w-[300px] text-lg py-5 shadow-[0_0_30px_rgba(232,193,112,0.3)]">
-            QUIERO MI LIBERTAD FINANCIERA
+            Quiero mi licencia MT5
           </Button>
-          <div className="flex items-center gap-6 mt-6 opacity-70">
+          <div className="flex flex-wrap justify-center items-center gap-6 mt-6 opacity-70">
             <span className="text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <svg className="w-3 h-3 text-brand-green" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              Tus llaves, tus monedas
+              Sin tener que vender
             </span>
             <span className="text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <svg className="w-3 h-3 text-brand-green" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              Sin Bloqueos de Fondos
+              Ni redes de mercadeo
+            </span>
+            <span className="text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <svg className="w-3 h-3 text-brand-green" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              100% de profits para ti
             </span>
           </div>
         </div>
