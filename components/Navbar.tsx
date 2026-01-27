@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Logo } from './Logo';
+import { LogoV2 } from './LogoV2';
 
 export const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -29,7 +29,7 @@ export const Navbar: React.FC = () => {
         
         {/* Logo */}
         <div className="hover:opacity-90 transition-opacity cursor-pointer z-50" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
-          <Logo className="w-10 h-10 md:w-12 md:h-12" />
+          <LogoV2 className="w-10 h-10 md:w-12 md:h-12" />
         </div>
         
         {/* Desktop Menu */}

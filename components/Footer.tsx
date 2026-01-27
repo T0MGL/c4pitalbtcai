@@ -1,5 +1,5 @@
 import React from 'react';
-import { Logo } from './Logo';
+import { LogoV2 } from './LogoV2';
 
 export const Footer: React.FC = () => {
   return (
@@ -8,7 +8,7 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
              {/* Brand Logo */}
              <div className="opacity-80 hover:opacity-100 transition-opacity">
-                <Logo className="w-8 h-8" />
+                <LogoV2 className="w-8 h-8" />
             </div>
             
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
