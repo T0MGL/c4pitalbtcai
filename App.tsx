@@ -10,7 +10,6 @@ import { HeroVSL } from './components/HeroVSL';
 // Usamos lazy para dividir el bundle, PERO los pre-cargaremos automáticamente
 // para que el usuario no vea "cargando" al bajar.
 const Performance = lazy(() => import('./components/Performance').then(module => ({ default: module.Performance })));
-const SystemSpecs = lazy(() => import('./components/SystemSpecs').then(module => ({ default: module.SystemSpecs })));
 const WealthSimulator = lazy(() => import('./components/WealthSimulator').then(module => ({ default: module.WealthSimulator })));
 const Features = lazy(() => import('./components/Features').then(module => ({ default: module.Features })));
 const Comparison = lazy(() => import('./components/Comparison').then(module => ({ default: module.Comparison })));
@@ -46,7 +45,6 @@ function App() {
       // Pequeño delay para dejar que el navegador pinte el Hero primero
       await new Promise(r => setTimeout(r, 100));
       import('./components/Performance');
-      import('./components/SystemSpecs');
 
       // Prioridad 2: Gráficas pesadas, Pricing y Calculadora (Bloque Interactivo)
       await new Promise(r => setTimeout(r, 300));
@@ -109,10 +107,6 @@ function App() {
           <Performance />
         </Suspense>
       </div>
-
-      <Suspense fallback={<div className="w-full min-h-[400px] bg-brand-dark" />}>
-        <SystemSpecs />
-      </Suspense>
 
       {/* BLOQUE 3: INTERACTIVO (GRAFICAS) */}
       <Suspense fallback={<div className="w-full min-h-[600px] bg-brand-dark" />}>
