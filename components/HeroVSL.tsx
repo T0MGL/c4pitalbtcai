@@ -90,15 +90,11 @@ export const HeroVSL: React.FC = () => {
           El robot que <span className="text-transparent bg-clip-text bg-metallic-gold drop-shadow-[0_0_25px_rgba(232,193,112,0.4)]">no todos</span> pueden tener.
         </h1>
 
-        {/* Trust Badges */}
-        <div className="flex flex-wrap justify-center gap-6 md:gap-12 mb-16 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-          {['Tu Dinero, Tu Control', 'Resultados Verificados', '100% Manos Libres'].map((text, i) => (
-            <div key={i} className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10 hover:border-brand-gold/50 transition-colors duration-300">
-              <svg className="w-4 h-4 text-brand-gold" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              <span className="text-xs uppercase tracking-widest font-bold text-slate-200">{text}</span>
-            </div>
-          ))}
-        </div>
+        {/* Subheadline */}
+        <p className="text-lg md:text-2xl text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed font-light animate-fade-in-up drop-shadow-lg" style={{ animationDelay: '0.6s' }}>
+          La verdadera libertad financiera es <strong className="text-white">automática</strong>. <br className="hidden md:block" />
+          Nuestro sistema opera los mercados 24/7 con precisión institucional, permitiéndote generar riqueza sin estar pegado a una pantalla.
+        </p>
 
         {/* Video Container */}
         <div className="relative w-full aspect-video max-w-5xl mx-auto mb-16 animate-fade-in-up group perspective-1000" style={{ animationDelay: '1s' }}>
