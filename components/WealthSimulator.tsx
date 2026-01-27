@@ -3,29 +3,27 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ScrollReveal } from './ScrollReveal';
 import { Button } from './Button';
 
+const MONTHLY_RATE = 20;
+const PERIOD_OPTIONS = [12, 24, 36] as const;
+
 export const WealthSimulator: React.FC = () => {
-  // Ajuste de valores por defecto para ser más realistas/atractivos
   const [initialCapital, setInitialCapital] = useState(2500);
   const [monthlyContribution, setMonthlyContribution] = useState(200);
-  const [years, setYears] = useState(2);
-  const [monthlyRate, setMonthlyRate] = useState(10); // 10% mensual
+  const [months, setMonths] = useState<12 | 24 | 36>(12);
 
   const data = useMemo(() => {
     let currentBalance = initialCapital;
     let totalInvested = initialCapital;
     const chartData = [];
 
-    for (let m = 0; m <= years * 12; m++) {
+    for (let m = 0; m <= months; m++) {
       if (m > 0) {
-        // Interés compuesto mensual
-        currentBalance = currentBalance * (1 + monthlyRate / 100);
-        // Aporte mensual
+        currentBalance = currentBalance * (1 + MONTHLY_RATE / 100);
         currentBalance += monthlyContribution;
         totalInvested += monthlyContribution;
       }
-      
-      // Solo guardar puntos clave para no saturar la gráfica
-      if (m % 3 === 0 || m === years * 12) {
+
+      if (m % 3 === 0 || m === months) {
         chartData.push({
             month: m,
             balance: Math.round(currentBalance),
@@ -35,7 +33,7 @@ export const WealthSimulator: React.FC = () => {
       }
     }
     return chartData;
-  }, [initialCapital, monthlyContribution, years, monthlyRate]);
+  }, [initialCapital, monthlyContribution, months]);
 
   const finalBalance = data[data.length - 1].balance;
   const totalInvested = data[data.length - 1].invested;
@@ -73,8 +71,8 @@ export const WealthSimulator: React.FC = () => {
                     <div>
                         <label className="block text-slate-400 text-sm font-bold uppercase tracking-wider mb-3">Capital Inicial ($USD)</label>
                         <div className="flex items-center gap-4">
-                            <input 
-                                type="range" min="500" max="20000" step="100" 
+                            <input
+                                type="range" min="500" max="20000" step="100"
                                 value={initialCapital} onChange={(e) => setInitialCapital(Number(e.target.value))}
                                 className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-gold touch-none"
                             />
@@ -89,8 +87,8 @@ export const WealthSimulator: React.FC = () => {
                     <div>
                         <label className="block text-slate-400 text-sm font-bold uppercase tracking-wider mb-3">Aporte Mensual ($USD)</label>
                         <div className="flex items-center gap-4">
-                            <input 
-                                type="range" min="0" max="2000" step="50" 
+                            <input
+                                type="range" min="0" max="2000" step="50"
                                 value={monthlyContribution} onChange={(e) => setMonthlyContribution(Number(e.target.value))}
                                 className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-gold touch-none"
                             />
@@ -104,35 +102,31 @@ export const WealthSimulator: React.FC = () => {
 
                   <ScrollReveal direction="right" delay={0.4}>
                     <div>
-                        <label className="block text-slate-400 text-sm font-bold uppercase tracking-wider mb-3">Periodo (Años)</label>
-                        <div className="flex items-center gap-4">
-                            <input 
-                                type="range" min="1" max="5" step="1" 
-                                value={years} onChange={(e) => setYears(Number(e.target.value))}
-                                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-gold touch-none"
-                            />
-                            <div className="w-24 bg-black/40 border border-white/10 rounded px-3 py-2 text-white font-mono text-right">
-                                {years} Años
-                            </div>
+                        <label className="block text-slate-400 text-sm font-bold uppercase tracking-wider mb-3">Periodo</label>
+                        <div className="flex gap-2">
+                            {PERIOD_OPTIONS.map((p) => (
+                                <button
+                                    key={p}
+                                    onClick={() => setMonths(p)}
+                                    className={`flex-1 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-all ${
+                                        months === p
+                                            ? 'bg-brand-gold/20 border border-brand-gold text-brand-gold'
+                                            : 'bg-black/40 border border-white/10 text-slate-400 hover:border-white/20'
+                                    }`}
+                                >
+                                    {p} Meses
+                                </button>
+                            ))}
                         </div>
                     </div>
                   </ScrollReveal>
-                  
-                   <ScrollReveal direction="right" delay={0.5}>
-                    <div>
-                        <label className="block text-slate-400 text-sm font-bold uppercase tracking-wider mb-3">Rentabilidad Mensual (%)</label>
-                        <div className="flex items-center gap-4">
-                            <input 
-                                type="range" min="5" max="15" step="0.5" 
-                                value={monthlyRate} onChange={(e) => setMonthlyRate(Number(e.target.value))}
-                                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-gold touch-none"
-                            />
-                            <div className="w-24 bg-black/40 border border-white/10 rounded px-3 py-2 text-brand-gold font-mono font-bold text-right">
-                                {monthlyRate}%
-                            </div>
-                        </div>
-                        <p className="text-[10px] text-brand-gold/70 mt-2">Rango promedio del sistema.</p>
+
+                  <ScrollReveal direction="right" delay={0.5}>
+                    <div className="flex items-center justify-between bg-black/40 border border-white/10 rounded-lg px-4 py-3">
+                        <span className="text-slate-400 text-sm font-bold uppercase tracking-wider">Rentabilidad Mensual</span>
+                        <span className="text-brand-gold font-mono font-bold text-lg">{MONTHLY_RATE}%</span>
                     </div>
+                    <p className="text-[10px] text-brand-gold/70 mt-2">Promedio del sistema.</p>
                   </ScrollReveal>
 
                   <div className="pt-4 border-t border-white/10">
