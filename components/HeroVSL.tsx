@@ -97,7 +97,7 @@ export const HeroVSL: React.FC = () => {
         </p>
 
         {/* Video Container */}
-        <div className="relative w-full aspect-video max-w-5xl mx-auto mb-16 animate-fade-in-up group perspective-1000" style={{ animationDelay: '1s' }}>
+        <div className="relative w-full aspect-video max-w-5xl mx-auto mb-24 animate-fade-in-up group perspective-1000" style={{ animationDelay: '1s' }}>
           <div className="absolute -inset-2 bg-gradient-to-r from-brand-gold/30 via-white/10 to-brand-gold/30 rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition duration-1000 animate-pulse-slow"></div>
 
           <div className="relative rounded-xl overflow-hidden bg-[#000] border border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:scale-[1.01] transition-transform duration-700">
