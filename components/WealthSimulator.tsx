@@ -222,6 +222,12 @@ export const WealthSimulator: React.FC = () => {
                   <Button onClick={openForm} pulse className="shadow-[0_0_40px_rgba(232,193,112,0.4)]">
                       VERIFICAR PRECIO Y DISPONIBILIDAD
                   </Button>
+                  <div className="mt-4">
+                    <a href="https://www.myfxbook.com/members/GoldenForexx/capitalbtc-ai-trader/11726357" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-brand-gold text-xs font-bold uppercase tracking-widest hover:text-white transition-colors group">
+                      <span className="border-b border-brand-gold/30 group-hover:border-white pb-0.5 transition-colors">Ver Cuenta Auditada en MyFXBook</span>
+                      <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                    </a>
+                  </div>
               </div>
           </ScrollReveal>
        </div>
