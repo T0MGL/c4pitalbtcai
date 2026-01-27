@@ -50,7 +50,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onFinish }) => {
 
             {/* Logo Container */}
             <div className="relative mb-8 transform scale-150">
-                {/* Animated Logo based on favicon SVG logic */}
+                {/* Animated Logo - LogoV2 */}
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" className="w-24 h-24 drop-shadow-[0_0_20px_rgba(232,193,112,0.4)]">
                     <defs>
                         <linearGradient id="loader-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -60,21 +60,27 @@ export const Preloader: React.FC<PreloaderProps> = ({ onFinish }) => {
                         </linearGradient>
                     </defs>
 
-                    {/* Animated Logo Paths */}
-                    <path
-                        d="M 88 32 L 72 10 L 28 10 L 12 50 L 28 90 L 72 90 L 88 68"
+                    {/* Rounded Square Frame */}
+                    <rect
+                        x="6" y="6" width="88" height="88" rx="20"
                         stroke="url(#loader-gradient)"
-                        strokeWidth="6"
-                        strokeLinecap="square"
-                        strokeLinejoin="miter"
-                        className="animate-[dash_2s_ease-in-out_infinite]"
-                        strokeDasharray="300"
-                        strokeDashoffset="0"
-                    />
-                    <path
-                        d="M 50 32 L 68 50 L 50 68 L 32 50 Z"
-                        fill="url(#loader-gradient)"
+                        strokeWidth="4"
+                        fill="#E8C170"
+                        fillOpacity="0.03"
                         className="animate-pulse"
+                    />
+
+                    {/* Animated C Monogram */}
+                    <path
+                        d="M 66 28 L 44 28 Q 24 28 24 50 Q 24 72 44 72 L 66 72"
+                        stroke="url(#loader-gradient)"
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                        className="animate-[dash_2s_ease-in-out_infinite]"
+                        strokeDasharray="200"
+                        strokeDashoffset="0"
                     />
                 </svg>
             </div>
@@ -96,9 +102,9 @@ export const Preloader: React.FC<PreloaderProps> = ({ onFinish }) => {
 
             <style>{`
         @keyframes dash {
-          0% { stroke-dashoffset: 300; }
+          0% { stroke-dashoffset: 200; }
           50% { stroke-dashoffset: 0; }
-          100% { stroke-dashoffset: -300; }
+          100% { stroke-dashoffset: -200; }
         }
       `}</style>
         </div>
