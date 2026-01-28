@@ -1,7 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './Button';
+import {
+  trackFormOpen,
+  trackFormStep,
+  trackFormSubmission,
+  trackDownsellActivated,
+} from '../lib/metaPixel';
 
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx3vM5jKGmpYLNxbZC97NQInrNEG2FENzNRhqWb_6J3OcFiWqNCOdFpDaEKEPuCg41x/exec'; 
+const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL || ''; 
 
 type ViewMode = 'default' | 'exit-warning' | 'downsell';
 
@@ -56,8 +62,18 @@ export const QualificationForm: React.FC = () => {
     notes: ''         
   });
 
+  // Track if form open event has been fired this session (avoid duplicates)
+  const hasTrackedOpen = useRef(false);
+
   useEffect(() => {
-    const handleOpen = () => setIsOpen(true);
+    const handleOpen = () => {
+      setIsOpen(true);
+      // Track form open (InitiateCheckout) - only once per session
+      if (!hasTrackedOpen.current) {
+        trackFormOpen();
+        hasTrackedOpen.current = true;
+      }
+    };
     window.addEventListener('open-qualification-form', handleOpen);
     return () => window.removeEventListener('open-qualification-form', handleOpen);
   }, []);
@@ -101,8 +117,15 @@ export const QualificationForm: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Step names for tracking
+  const stepNames = ['Obstacle', 'Experience', 'Capital', 'Goal', 'Contact'];
+
   const handleAutoAdvance = (field: string, value: string, nextStepHeader: string) => {
       setFormData(prev => ({ ...prev, [field]: value }));
+
+      // Track the completed step
+      trackFormStep(step, stepNames[step - 1], totalSteps);
+
       setTimeout(() => {
           setDynamicHeader(nextStepHeader);
           setStep(prev => prev + 1);
@@ -113,7 +136,10 @@ export const QualificationForm: React.FC = () => {
       setIsDownsellActive(true);
       setViewMode('default');
       setDynamicHeader("Oferta Especial Desbloqueada");
-      setStep(1); 
+      setStep(1);
+
+      // Track downsell activation
+      trackDownsellActivated();
   };
 
   const handleSubmit = async () => {
@@ -138,7 +164,7 @@ export const QualificationForm: React.FC = () => {
         status: 'new'
     };
 
-    if (GOOGLE_SCRIPT_URL.includes('PLACEHOLDER')) {
+    if (!GOOGLE_SCRIPT_URL) {
         try {
             const existingLeads = JSON.parse(localStorage.getItem('capital_btc_crm_leads') || '[]');
             localStorage.setItem('capital_btc_crm_leads', JSON.stringify([payload, ...existingLeads]));
@@ -147,6 +173,14 @@ export const QualificationForm: React.FC = () => {
         await new Promise(r => setTimeout(r, 1500));
         setIsSuccess(true);
         setIsSubmitting(false);
+
+        // Track successful form submission (dev mode)
+        trackFormSubmission({
+          name: formData.name,
+          capital: formData.capital,
+          experience: formData.experience,
+          isDownsell: isDownsellActive,
+        });
         return;
     }
 
@@ -159,6 +193,14 @@ export const QualificationForm: React.FC = () => {
       });
       await new Promise(r => setTimeout(r, 1500));
       setIsSuccess(true);
+
+      // Track successful form submission (production mode)
+      trackFormSubmission({
+        name: formData.name,
+        capital: formData.capital,
+        experience: formData.experience,
+        isDownsell: isDownsellActive,
+      });
     } catch (error) {
       alert('Error al enviar. Intenta de nuevo.');
     } finally {

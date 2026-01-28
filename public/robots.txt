@@ -1,0 +1,121 @@
+# ===========================================
+# Capital BTC AI - Robots.txt
+# https://capitalbtcai.com
+# Last updated: 2026-01-28
+# ===========================================
+
+# Default rules for all crawlers
+User-agent: *
+Allow: /
+Disallow: /crm
+Disallow: /crm/
+Disallow: /api/
+Disallow: /*.json$
+Disallow: /*?*
+Disallow: /private/
+
+# Google Search Bot
+User-agent: Googlebot
+Allow: /
+Disallow: /crm
+Disallow: /crm/
+
+# Google Image Bot
+User-agent: Googlebot-Image
+Allow: /
+Disallow: /crm
+
+# Google AdSense Bot
+User-agent: Mediapartners-Google
+Allow: /
+
+# Bing Search Bot
+User-agent: Bingbot
+Allow: /
+Disallow: /crm
+Disallow: /crm/
+
+# Bing Ads Bot
+User-agent: Adidxbot
+Allow: /
+Disallow: /crm
+
+# Yahoo Search Bot
+User-agent: Slurp
+Allow: /
+Disallow: /crm
+Disallow: /crm/
+
+# DuckDuckGo Bot
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /crm
+Disallow: /crm/
+
+# Baidu Search Bot
+User-agent: Baiduspider
+Allow: /
+Disallow: /crm
+Disallow: /crm/
+
+# Yandex Search Bot
+User-agent: Yandex
+Allow: /
+Disallow: /crm
+Disallow: /crm/
+
+# Facebook Crawler (for Open Graph)
+User-agent: facebookexternalhit
+Allow: /
+Disallow: /crm
+
+# Twitter Crawler
+User-agent: Twitterbot
+Allow: /
+Disallow: /crm
+
+# LinkedIn Crawler
+User-agent: LinkedInBot
+Allow: /
+Disallow: /crm
+
+# Apple Bot
+User-agent: Applebot
+Allow: /
+Disallow: /crm
+Disallow: /crm/
+
+# Block AI training bots (optional - protect content)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+# Block aggressive/spam bots
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Sitemap location
+Sitemap: https://capitalbtcai.com/sitemap.xml
+
+# Host directive (legacy, but still used by some bots)
+Host: https://capitalbtcai.com

@@ -15,7 +15,7 @@ export const Footer: React.FC = () => {
                 <span className="text-slate-500 text-sm font-mono">
                     &copy; {new Date().getFullYear()} Capital BTC AI. Todos los derechos reservados.
                 </span>
-                <a href="#crm" className="text-[10px] text-slate-700 hover:text-brand-gold transition-colors uppercase tracking-widest font-bold">
+                <a href="/crm" className="text-[10px] text-slate-700 hover:text-brand-gold transition-colors uppercase tracking-widest font-bold">
                     Acceso Socios
                 </a>
             </div>

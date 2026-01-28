@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroVSL } from './components/HeroVSL';
+import { initMetaPixel, trackPageView, trackViewContent } from './lib/metaPixel';
 
 // --- COMPONENTES CRÍTICOS (Carga inmediata) ---
 // Navbar y HeroVSL se importan arriba de forma estándar para asegurar 
@@ -26,16 +27,32 @@ import { Preloader } from './components/Preloader';
 function App() {
   const [view, setView] = useState('home');
   const [showPreloader, setShowPreloader] = useState(true);
+  const [crmAuthenticated, setCrmAuthenticated] = useState(() => {
+    return sessionStorage.getItem('crm_auth') === 'true';
+  });
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+
+  const handleCrmLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === process.env.CRM_PASSWORD) {
+      sessionStorage.setItem('crm_auth', 'true');
+      setCrmAuthenticated(true);
+      setPasswordError(false);
+    } else {
+      setPasswordError(true);
+    }
+  };
 
   useEffect(() => {
-    // 1. ROUTING SIMPE
-    const handleHashChange = () => {
-      const hash = window.location.hash;
-      if (hash === '#crm') setView('crm');
+    // 1. ROUTING SIMPLE (path-based)
+    const handleRouteChange = () => {
+      const path = window.location.pathname;
+      if (path === '/crm') setView('crm');
       else setView('home');
     };
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
+    handleRouteChange();
+    window.addEventListener('popstate', handleRouteChange);
 
     // 2. PRECARGA INTELIGENTE (Eager Preloading)
     // Esto descarga los siguientes bloques en segundo plano INMEDIATAMENTE después
@@ -66,14 +83,60 @@ function App() {
     };
 
     // Ejecutar precarga solo si no estamos en la vista de CRM
-    if (window.location.hash !== '#crm') {
+    if (window.location.pathname !== '/crm') {
       preloadApp();
     }
 
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('popstate', handleRouteChange);
+  }, []);
+
+  // META PIXEL INITIALIZATION
+  // Initialize once on mount and track PageView + ViewContent
+  useEffect(() => {
+    // Initialize the pixel (safe to call multiple times - it checks internally)
+    initMetaPixel();
+
+    // Track PageView (only fires once per session due to internal deduplication)
+    trackPageView();
+
+    // Track ViewContent for the main landing page
+    if (window.location.pathname !== '/crm') {
+      trackViewContent({
+        content_name: 'Capital BTC AI - Landing Page',
+        content_category: 'Trading Bot License',
+        value: 997,
+        currency: 'USD',
+      });
+    }
   }, []);
 
   if (view === 'crm') {
+    if (!crmAuthenticated) {
+      return (
+        <div className="min-h-screen bg-brand-dark flex items-center justify-center">
+          <form onSubmit={handleCrmLogin} className="bg-slate-900/50 border border-slate-800 rounded-xl p-8 w-full max-w-sm">
+            <h2 className="text-xl font-bold text-white mb-6 text-center">Acceso CRM</h2>
+            <input
+              type="password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              placeholder="Contraseña"
+              className={`w-full px-4 py-3 bg-slate-800 border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold transition-colors ${passwordError ? 'border-red-500' : 'border-slate-700'}`}
+              autoFocus
+            />
+            {passwordError && (
+              <p className="text-red-500 text-sm mt-2">Contraseña incorrecta</p>
+            )}
+            <button
+              type="submit"
+              className="w-full mt-4 py-3 bg-brand-gold text-brand-dark font-bold rounded-lg hover:bg-brand-gold/90 transition-colors"
+            >
+              Entrar
+            </button>
+          </form>
+        </div>
+      );
+    }
     return (
       <Suspense fallback={<div className="min-h-screen bg-brand-dark flex items-center justify-center text-brand-gold animate-pulse">Cargando Sistema...</div>}>
         <CRM />

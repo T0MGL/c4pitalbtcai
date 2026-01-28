@@ -1,20 +1,31 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Capital BTC AI - VSL Landing Page
 
-# Run and deploy your AI Studio app
+Sistema de landing page y captura de leads desarrollado por **Bright Idea**.
 
-This contains everything you need to run your app locally.
+## Ejecutar Localmente
 
-View your app in AI Studio: https://ai.studio/apps/drive/1n1O_kDo1ASrtZk2iNf8qkvce83sx7Dgr
+**Requisitos:** Node.js
 
-## Run Locally
+1. Instalar dependencias:
+   ```bash
+   npm install
+   ```
 
-**Prerequisites:**  Node.js
+2. Configurar variables de entorno:
+   - Copiar `.env.example` a `.env.local`
+   - Completar las variables necesarias
 
+3. Ejecutar la aplicación:
+   ```bash
+   npm run dev
+   ```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Estructura del Proyecto
+
+- `/components` - Componentes React
+- `/lib` - Utilidades y helpers
+- `/public` - Assets estáticos
+
+## Desarrollado por
+
+**Bright Idea** - Soluciones digitales

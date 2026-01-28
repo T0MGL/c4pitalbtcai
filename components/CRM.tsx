@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from './Button';
 
-// Reemplazar con la URL real de tu Google Script cuando esté listo
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx_PLACHOLDER_URL_HERE/exec';
+const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL || '';
 
 interface Lead {
   id: string;
@@ -38,7 +37,7 @@ export const CRM: React.FC = () => {
     setLoading(true);
     
     // DEV MODE CHECK: Si la URL es placeholder, usamos mock + local storage
-    if (GOOGLE_SCRIPT_URL.includes('PLACEHOLDER')) {
+    if (!GOOGLE_SCRIPT_URL) {
         console.warn("CRM en Modo Desarrollo: Usando datos locales y mock.");
         
         setTimeout(() => {
@@ -84,7 +83,7 @@ export const CRM: React.FC = () => {
     // Optimistic Update
     setLeads(prev => prev.map(l => l.id === id ? { ...l, status: newStatus } : l));
 
-    if (GOOGLE_SCRIPT_URL.includes('PLACEHOLDER')) return; // No intentar enviar a placeholder
+    if (!GOOGLE_SCRIPT_URL) return; // No intentar enviar a placeholder
 
     try {
       await fetch(GOOGLE_SCRIPT_URL, {
@@ -155,7 +154,7 @@ export const CRM: React.FC = () => {
               </div>
               <div className="flex items-center gap-2 md:gap-4">
                   <span className="text-xs font-mono text-slate-500 hidden md:block">
-                      {GOOGLE_SCRIPT_URL.includes('PLACEHOLDER') ? 'Modo Desarrollo (Mock Data)' : 'Conectado'}
+                      {!GOOGLE_SCRIPT_URL ? 'Modo Desarrollo (Mock Data)' : 'Conectado'}
                   </span>
                   
                   <Button onClick={handleBackToSite} variant="secondary" className="!py-1.5 !px-3 md:!px-4 text-[10px] md:text-xs">
