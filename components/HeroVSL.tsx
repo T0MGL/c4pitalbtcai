@@ -92,7 +92,6 @@ export const HeroVSL: React.FC = () => {
 
         {/* Subheadline */}
         <p className="text-lg md:text-2xl text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed font-light animate-fade-in-up drop-shadow-lg" style={{ animationDelay: '0.6s' }}>
-          La verdadera libertad financiera es <strong className="text-white">automática</strong>. <br className="hidden md:block" />
           Nuestro sistema opera los mercados 24/7 con precisión institucional, permitiéndote generar riqueza sin estar pegado a una pantalla.
         </p>
 
