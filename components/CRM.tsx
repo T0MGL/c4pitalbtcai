@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from './Button';
+import { LogoV2 } from './LogoV2';
 
 const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL || '';
 
@@ -29,17 +30,83 @@ export const CRM: React.FC = () => {
     { id: '4', date: new Date(Date.now() - 250000000).toISOString(), name: 'Ana Lopez', phone: '13051234567', capital: '$1,000 - $5,000 USD', experience: 'Principiante', goal: 'Ahorro', status: 'new' },
   ];
 
+  // Parse Spanish date format like "27/1/2026, 6:36:45 p. m." or "28/1/2026, 12:50:21 a. m."
+  const parseSpanishDate = (dateStr: string): string => {
+    if (!dateStr) return new Date().toISOString();
+
+    // If already ISO format, return as-is
+    if (dateStr.includes('T') || dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+      return dateStr;
+    }
+
+    try {
+      // Format: "27/1/2026, 6:36:45 p. m." or "28/1/2026, 12:50:21 a. m."
+      const isPM = dateStr.toLowerCase().includes('p. m.') || dateStr.toLowerCase().includes('pm');
+      const isAM = dateStr.toLowerCase().includes('a. m.') || dateStr.toLowerCase().includes('am');
+
+      // Remove AM/PM markers
+      const cleanedStr = dateStr
+        .replace(/\s*[ap]\.\s*m\.\s*/gi, '')
+        .replace(/\s*[ap]m\s*/gi, '')
+        .trim();
+
+      // Split date and time
+      const [datePart, timePart] = cleanedStr.split(',').map(s => s.trim());
+
+      if (!datePart) return new Date().toISOString();
+
+      // Parse date: "27/1/2026"
+      const [day, month, year] = datePart.split('/').map(Number);
+
+      // Parse time: "6:36:45" or "12:50:21"
+      let hours = 0, minutes = 0, seconds = 0;
+      if (timePart) {
+        const timeParts = timePart.split(':').map(Number);
+        hours = timeParts[0] || 0;
+        minutes = timeParts[1] || 0;
+        seconds = timeParts[2] || 0;
+
+        // Convert to 24-hour format
+        if (isPM && hours !== 12) {
+          hours += 12;
+        } else if (isAM && hours === 12) {
+          hours = 0;
+        }
+      }
+
+      const date = new Date(year, month - 1, day, hours, minutes, seconds);
+      return date.toISOString();
+    } catch (e) {
+      console.error('Error parsing date:', dateStr, e);
+      return new Date().toISOString();
+    }
+  };
+
+  // Map Google Sheets Spanish columns to our Lead interface
+  const mapSheetDataToLead = (row: Record<string, unknown>): Lead => {
+    return {
+      id: String(row.id || row.Id || row.ID || crypto.randomUUID()),
+      date: parseSpanishDate(String(row.Fecha || row.fecha || row.date || '')),
+      name: String(row.Nombre || row.nombre || row.name || ''),
+      phone: String(row.WhatsApp || row.whatsapp || row.phone || row.Phone || ''),
+      capital: String(row.Capital || row.capital || ''),
+      experience: String(row.Experiencia || row.experiencia || row.experience || ''),
+      goal: String(row.Objetivo || row.objetivo || row.goal || ''),
+      status: (row.Status || row.status || row.Estado || row.estado || 'new') as Lead['status'],
+    };
+  };
+
   useEffect(() => {
     fetchLeads();
   }, []);
 
   const fetchLeads = async () => {
     setLoading(true);
-    
+
     // DEV MODE CHECK: Si la URL es placeholder, usamos mock + local storage
     if (!GOOGLE_SCRIPT_URL) {
         console.warn("CRM en Modo Desarrollo: Usando datos locales y mock.");
-        
+
         setTimeout(() => {
             let localLeads: Lead[] = [];
             try {
@@ -52,10 +119,10 @@ export const CRM: React.FC = () => {
 
             // Merge local leads with mock leads
             const allLeads = [...localLeads, ...MOCK_LEADS];
-            
+
             // Sort by date desc (Most recent first)
             allLeads.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-            
+
             setLeads(allLeads);
             setLoading(false);
         }, 800);
@@ -65,9 +132,13 @@ export const CRM: React.FC = () => {
     try {
       const response = await fetch(GOOGLE_SCRIPT_URL);
       const data = await response.json();
-      
+
       if (Array.isArray(data) && data.length > 0) {
-          setLeads(data.reverse()); // Mostrar más recientes primero
+          // Map the data from Google Sheets format to our Lead format
+          const mappedLeads = data.map(mapSheetDataToLead);
+          // Sort by date descending (most recent first)
+          mappedLeads.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          setLeads(mappedLeads);
       } else {
           setLeads(MOCK_LEADS);
       }
@@ -149,7 +220,7 @@ export const CRM: React.FC = () => {
       <header className="bg-[#0B101B] border-b border-white/10 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                   <div className="w-8 h-8 rounded bg-brand-gold flex items-center justify-center text-brand-dark font-bold">C</div>
+                   <LogoV2 className="w-8 h-8" withText={false} />
                    <h1 className="font-serif font-bold text-white tracking-wide">CAPITAL BTC <span className="text-brand-gold">CRM</span></h1>
               </div>
               <div className="flex items-center gap-2 md:gap-4">
