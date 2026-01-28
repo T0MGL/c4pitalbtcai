@@ -232,8 +232,16 @@ export const CRM: React.FC = () => {
                       ← Volver al Sitio
                   </Button>
 
-                  <Button onClick={fetchLeads} className="!py-1.5 !px-3 md:!px-4 text-[10px] md:text-xs">
-                      Actualizar
+                  <Button onClick={fetchLeads} disabled={loading} className="!py-1.5 !px-3 md:!px-4 text-[10px] md:text-xs disabled:opacity-50">
+                      {loading ? (
+                          <span className="flex items-center gap-2">
+                              <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              <span className="hidden md:inline">Cargando...</span>
+                          </span>
+                      ) : 'Actualizar'}
                   </Button>
               </div>
           </div>
@@ -251,7 +259,11 @@ export const CRM: React.FC = () => {
               ].map((stat, i) => (
                   <div key={i} className="bg-[#0B101B] border border-white/5 p-4 rounded-lg">
                       <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">{stat.label}</p>
-                      <p className={`text-2xl font-mono font-bold ${stat.color}`}>{stat.val}</p>
+                      {loading ? (
+                          <div className="h-8 w-12 bg-white/10 rounded animate-pulse mt-1"></div>
+                      ) : (
+                          <p className={`text-2xl font-mono font-bold ${stat.color}`}>{stat.val}</p>
+                      )}
                   </div>
               ))}
           </div>
@@ -289,9 +301,44 @@ export const CRM: React.FC = () => {
                       </thead>
                       <tbody className="divide-y divide-white/5 text-sm">
                           {loading ? (
-                              <tr>
-                                  <td colSpan={6} className="p-8 text-center text-slate-500 animate-pulse">Cargando datos...</td>
-                              </tr>
+                              // Skeleton loading rows
+                              [...Array(5)].map((_, i) => (
+                                  <tr key={`skeleton-${i}`} className="animate-pulse">
+                                      {/* STATUS skeleton */}
+                                      <td className="p-4">
+                                          <div className="h-5 w-16 bg-white/10 rounded"></div>
+                                      </td>
+                                      {/* DATE skeleton */}
+                                      <td className="p-4">
+                                          <div className="h-4 w-14 bg-white/10 rounded mb-1"></div>
+                                          <div className="h-3 w-10 bg-white/5 rounded"></div>
+                                      </td>
+                                      {/* LEAD INFO skeleton */}
+                                      <td className="p-4">
+                                          <div className="h-4 w-28 bg-white/10 rounded mb-1"></div>
+                                          <div className="h-3 w-24 bg-brand-gold/20 rounded"></div>
+                                      </td>
+                                      {/* PROFILE skeleton */}
+                                      <td className="p-4">
+                                          <div className="flex flex-col gap-1">
+                                              <div className="h-5 w-32 bg-white/5 rounded"></div>
+                                              <div className="h-5 w-24 bg-white/5 rounded"></div>
+                                          </div>
+                                      </td>
+                                      {/* GOAL skeleton */}
+                                      <td className="p-4">
+                                          <div className="h-4 w-36 bg-white/5 rounded"></div>
+                                      </td>
+                                      {/* ACTIONS skeleton */}
+                                      <td className="p-4">
+                                          <div className="flex justify-end gap-2">
+                                              <div className="h-8 w-8 bg-white/5 rounded"></div>
+                                              <div className="h-8 w-8 bg-white/5 rounded"></div>
+                                              <div className="h-8 w-8 bg-white/5 rounded"></div>
+                                          </div>
+                                      </td>
+                                  </tr>
+                              ))
                           ) : paginatedLeads.length === 0 ? (
                               <tr>
                                   <td colSpan={6} className="p-8 text-center text-slate-500">No hay leads en esta vista.</td>
