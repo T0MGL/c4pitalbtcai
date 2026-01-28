@@ -40,11 +40,9 @@ El dominio es propiedad del cliente y puede ser transferido o renovado de forma 
 
 | Concepto | Detalle |
 |----------|---------|
-| **Proveedor** | Vercel |
-| **Plan** | Profesional |
 | **Vigencia** | 1 año |
 | **Fecha de Renovación** | 28 de Febrero 2026 |
-| **Incluye** | SSL/HTTPS, CDN Global, Backups |
+| **Incluye** | SSL/HTTPS, CDN Global |
 
 ### Fechas Importantes de Renovación
 
