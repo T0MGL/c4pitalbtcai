@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ScrollReveal } from './ScrollReveal';
 import { Button } from './Button';
 
@@ -8,36 +7,33 @@ const PERIOD_OPTIONS = [12, 24, 36] as const;
 
 export const WealthSimulator: React.FC = () => {
   const [initialCapital, setInitialCapital] = useState(2500);
-  const [monthlyContribution, setMonthlyContribution] = useState(200);
   const [months, setMonths] = useState<12 | 24 | 36>(12);
 
-  const data = useMemo(() => {
+  const tableData = useMemo(() => {
+    const rows = [];
     let currentBalance = initialCapital;
-    let totalInvested = initialCapital;
-    const chartData = [];
 
-    for (let m = 0; m <= months; m++) {
-      if (m > 0) {
-        currentBalance = currentBalance * (1 + MONTHLY_RATE / 100);
-        currentBalance += monthlyContribution;
-        totalInvested += monthlyContribution;
-      }
+    for (let m = 1; m <= months; m++) {
+      const balanceInicial = currentBalance;
+      const balanceFinal = currentBalance * (1 + MONTHLY_RATE / 100);
+      const beneficioTotal = balanceFinal - initialCapital;
+      const gananciasTotales = ((balanceFinal - initialCapital) / initialCapital) * 100;
 
-      if (m % 3 === 0 || m === months) {
-        chartData.push({
-            month: m,
-            balance: Math.round(currentBalance),
-            invested: totalInvested,
-            label: `Mes ${m}`
-        });
-      }
+      rows.push({
+        periodo: m,
+        balanceInicial: Math.round(balanceInicial * 100) / 100,
+        balanceFinal: Math.round(balanceFinal * 100) / 100,
+        beneficioTotal: Math.round(beneficioTotal * 100) / 100,
+        gananciasTotales: Math.round(gananciasTotales * 100) / 100,
+      });
+
+      currentBalance = balanceFinal;
     }
-    return chartData;
-  }, [initialCapital, monthlyContribution, months]);
+    return rows;
+  }, [initialCapital, months]);
 
-  const finalBalance = data[data.length - 1].balance;
-  const totalInvested = data[data.length - 1].invested;
-  const totalProfit = finalBalance - totalInvested;
+  const finalBalance = tableData[tableData.length - 1]?.balanceFinal || initialCapital;
+  const totalProfit = tableData[tableData.length - 1]?.beneficioTotal || 0;
 
   const openForm = () => {
     window.dispatchEvent(new CustomEvent('open-qualification-form'));
@@ -85,23 +81,6 @@ export const WealthSimulator: React.FC = () => {
 
                   <ScrollReveal direction="right" delay={0.3}>
                     <div>
-                        <label className="block text-slate-400 text-sm font-bold uppercase tracking-wider mb-3">Aporte Mensual ($USD)</label>
-                        <div className="flex items-center gap-4">
-                            <input
-                                type="range" min="0" max="2000" step="50"
-                                value={monthlyContribution} onChange={(e) => setMonthlyContribution(Number(e.target.value))}
-                                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-gold touch-none"
-                            />
-                            <div className="w-24 bg-black/40 border border-white/10 rounded px-3 py-2 text-white font-mono text-right">
-                                ${monthlyContribution.toLocaleString()}
-                            </div>
-                        </div>
-                        <p className="text-[10px] text-slate-500 mt-2">Reinyectar ganancias acelera el proceso exponencialmente.</p>
-                    </div>
-                  </ScrollReveal>
-
-                  <ScrollReveal direction="right" delay={0.4}>
-                    <div>
                         <label className="block text-slate-400 text-sm font-bold uppercase tracking-wider mb-3">Periodo</label>
                         <div className="flex gap-2">
                             {PERIOD_OPTIONS.map((p) => (
@@ -121,15 +100,7 @@ export const WealthSimulator: React.FC = () => {
                     </div>
                   </ScrollReveal>
 
-                  <ScrollReveal direction="right" delay={0.5}>
-                    <div className="flex items-center justify-between bg-black/40 border border-white/10 rounded-lg px-4 py-3">
-                        <span className="text-slate-400 text-sm font-bold uppercase tracking-wider">Rentabilidad Mensual</span>
-                        <span className="text-brand-gold font-mono font-bold text-lg">{MONTHLY_RATE}%</span>
-                    </div>
-                    <p className="text-[10px] text-brand-gold/70 mt-2">Promedio del sistema.</p>
-                  </ScrollReveal>
-
-                  <div className="pt-4 border-t border-white/10">
+                  <div className="pt-4 border-t border-white/10 mt-6">
                       <div className="flex justify-between items-end mb-2">
                           <span className="text-slate-400 text-sm">Patrimonio Final:</span>
                           <span className="text-3xl font-serif font-bold text-white">${finalBalance.toLocaleString()}</span>
@@ -141,77 +112,32 @@ export const WealthSimulator: React.FC = () => {
                   </div>
               </div>
 
-              {/* Gráfica */}
-              <div className="lg:col-span-8 relative min-h-[400px] flex flex-col">
-                 <ScrollReveal direction="left" delay={0.4} className="h-full w-full flex flex-col">
-                    {/* Updated Legend: No confusing radio buttons */}
-                    <div className="flex flex-wrap justify-end gap-4 md:gap-8 mb-4 px-2">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-0.5 bg-slate-600 border-t-2 border-slate-600 border-dashed"></div>
-                            <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Capital Aportado</span>
-                        </div>
-                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-3 bg-brand-gold/20 border-t-2 border-brand-gold rounded-sm"></div>
-                            <span className="text-xs text-brand-gold font-bold uppercase tracking-wider shadow-black drop-shadow-sm">Patrimonio Final (IA)</span>
-                        </div>
-                    </div>
-
-                    <div className="flex-grow min-h-0">
-                        <ResponsiveContainer width="100%" height="100%" minHeight={350}>
-                            <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                                <defs>
-                                    <linearGradient id="colorBalanceSim" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#E8C170" stopOpacity={0.6}/>
-                                        <stop offset="95%" stopColor="#E8C170" stopOpacity={0}/>
-                                    </linearGradient>
-                                    <pattern id="patternInvested" patternUnits="userSpaceOnUse" width="4" height="4">
-                                        <path d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2" stroke="#475569" strokeWidth="1" />
-                                    </pattern>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" vertical={false} />
-                                <XAxis 
-                                    dataKey="label" 
-                                    stroke="#64748B" 
-                                    tick={{fontSize: 10}} 
-                                    tickLine={false}
-                                    axisLine={false}
-                                    minTickGap={30}
-                                />
-                                <YAxis 
-                                    stroke="#64748B" 
-                                    tickFormatter={(value) => `$${(value/1000).toFixed(0)}k`} 
-                                    tick={{fontSize: 10, fontFamily: 'monospace'}}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    orientation="right"
-                                    width={40}
-                                />
-                                <Tooltip 
-                                    contentStyle={{ backgroundColor: '#0B101B', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                                    itemStyle={{ fontFamily: 'monospace' }}
-                                    labelStyle={{ color: '#94A3B8', marginBottom: '5px' }}
-                                    formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name === 'invested' ? 'Capital Aportado' : 'Patrimonio Final']}
-                                />
-                                <Area 
-                                    type="monotone" 
-                                    dataKey="invested" 
-                                    stroke="#64748B" 
-                                    strokeWidth={2}
-                                    strokeDasharray="4 4"
-                                    fill="transparent" 
-                                    name="Capital Aportado"
-                                />
-                                <Area 
-                                    type="monotone" 
-                                    dataKey="balance" 
-                                    stroke="#E8C170" 
-                                    strokeWidth={3} 
-                                    fill="url(#colorBalanceSim)" 
-                                    name="Patrimonio Final"
-                                    animationDuration={1500}
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
+              {/* Tabla de Períodos */}
+              <div className="lg:col-span-8 relative">
+                 <ScrollReveal direction="left" delay={0.4}>
+                    <div className="overflow-x-auto max-h-[400px] overflow-y-auto rounded-lg border border-white/10">
+                        <table className="w-full text-sm">
+                            <thead className="sticky top-0 bg-[#0B101B] border-b border-white/10">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Mes</th>
+                                    <th className="px-4 py-3 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Balance Inicial</th>
+                                    <th className="px-4 py-3 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Balance Final</th>
+                                    <th className="px-4 py-3 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Beneficio Total</th>
+                                    <th className="px-4 py-3 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Ganancia %</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {tableData.map((row) => (
+                                    <tr key={row.periodo} className="hover:bg-white/5 transition-colors">
+                                        <td className="px-4 py-3 text-white font-medium">{row.periodo}</td>
+                                        <td className="px-4 py-3 text-right text-slate-300 font-mono">${row.balanceInicial.toLocaleString()}</td>
+                                        <td className="px-4 py-3 text-right text-white font-mono">${row.balanceFinal.toLocaleString()}</td>
+                                        <td className="px-4 py-3 text-right text-brand-green font-mono">${row.beneficioTotal.toLocaleString()}</td>
+                                        <td className="px-4 py-3 text-right text-brand-gold font-mono font-bold">{row.gananciasTotales.toFixed(2)}%</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                  </ScrollReveal>
               </div>
