@@ -74,16 +74,17 @@ function App() {
   }, []);
 
   useEffect(() => {
-    initMetaPixel();
-    trackPageView();
-
+    // PageView is already tracked by Meta Pixel script in index.html head
+    // Only track ViewContent for landing page
     if (window.location.pathname !== '/crm') {
-      trackViewContent({
-        content_name: 'Capital BTC AI - Landing Page',
-        content_category: 'Trading Bot License',
-        value: 997,
-        currency: 'USD',
-      });
+      setTimeout(() => {
+        trackViewContent({
+          content_name: 'Capital BTC AI - Landing Page',
+          content_category: 'Trading Bot License',
+          value: 997,
+          currency: 'USD',
+        });
+      }, 100);
     }
   }, []);
 
