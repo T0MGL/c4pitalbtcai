@@ -1,4 +1,4 @@
-const META_PIXEL_ID = process.env.VITE_META_PIXEL_ID || '';
+const META_PIXEL_ID = '1194541592872537';
 declare global {
   interface Window {
     fbq: (
