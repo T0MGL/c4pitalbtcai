@@ -83,8 +83,6 @@ export const isPixelAvailable = (): boolean => {
   return typeof window !== 'undefined' && typeof window.fbq === 'function' && !!META_PIXEL_ID;
 };
 
-let pixelInitialized = false;
-
 export const initMetaPixel = (): void => {
   if (!META_PIXEL_ID) {
     if (process.env.NODE_ENV === 'development') {
@@ -93,48 +91,35 @@ export const initMetaPixel = (): void => {
     return;
   }
 
-  if (pixelInitialized) {
+  if (typeof window.fbq === 'function') {
     return;
   }
 
   const f = window as unknown as { fbq: unknown; _fbq: unknown };
+  const n = f.fbq = function (...args: unknown[]) {
+    if ((n as { callMethod?: (...a: unknown[]) => void }).callMethod) {
+      (n as { callMethod: (...a: unknown[]) => void }).callMethod(...args);
+    } else {
+      (n as { queue: unknown[] }).queue.push(args);
+    }
+  } as unknown as typeof window.fbq & { callMethod?: (...a: unknown[]) => void; queue: unknown[]; loaded: boolean; version: string };
+  if (!f._fbq) f._fbq = n;
+  n.push = n;
+  n.loaded = true;
+  n.version = '2.0';
+  n.queue = [];
 
-  // Create queue function if not already exists
-  if (typeof f.fbq !== 'function') {
-    const n = f.fbq = function (...args: unknown[]) {
-      if ((n as { callMethod?: (...a: unknown[]) => void }).callMethod) {
-        (n as { callMethod: (...a: unknown[]) => void }).callMethod(...args);
-      } else {
-        (n as { queue: unknown[] }).queue.push(args);
-      }
-    } as unknown as typeof window.fbq & { callMethod?: (...a: unknown[]) => void; queue: unknown[]; loaded: boolean; version: string };
-    if (!f._fbq) f._fbq = n;
-    n.push = n;
-    n.loaded = true;
-    n.version = '2.0';
-    n.queue = [];
-  }
-
-  // Insert Facebook Pixel Script
   const script = document.createElement('script');
   script.async = true;
   script.src = 'https://connect.facebook.net/en_US/fbevents.js';
   const firstScript = document.getElementsByTagName('script')[0];
-  if (firstScript && firstScript.parentNode) {
-    firstScript.parentNode.insertBefore(script, firstScript);
-  } else {
-    document.head.appendChild(script);
+  firstScript.parentNode?.insertBefore(script, firstScript);
+
+  window.fbq('init', META_PIXEL_ID);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Meta Pixel] Initialized with ID:', META_PIXEL_ID);
   }
-
-  // Initialize with a small delay to ensure script queuing works
-  setTimeout(() => {
-    window.fbq('init', META_PIXEL_ID);
-    pixelInitialized = true;
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Meta Pixel] Initialized with ID:', META_PIXEL_ID);
-    }
-  }, 0);
 };
 
 export const trackEvent = (
