@@ -75,16 +75,20 @@ function App() {
 
   useEffect(() => {
     initMetaPixel();
-    trackPageView();
 
-    if (window.location.pathname !== '/crm') {
-      trackViewContent({
-        content_name: 'Capital BTC AI - Landing Page',
-        content_category: 'Trading Bot License',
-        value: 997,
-        currency: 'USD',
-      });
-    }
+    // Track PageView with a slight delay to ensure pixel is ready
+    setTimeout(() => {
+      trackPageView();
+
+      if (window.location.pathname !== '/crm') {
+        trackViewContent({
+          content_name: 'Capital BTC AI - Landing Page',
+          content_category: 'Trading Bot License',
+          value: 997,
+          currency: 'USD',
+        });
+      }
+    }, 100);
   }, []);
 
   if (view === 'crm') {
