@@ -170,30 +170,39 @@ export const QualificationForm: React.FC = () => {
         await new Promise(r => setTimeout(r, 1500));
         setIsSuccess(true);
         setIsSubmitting(false);
-    } else {
-      try {
-        await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+
+        // Track successful form submission (dev mode)
+        trackFormSubmission({
+          name: formData.name,
+          capital: formData.capital,
+          experience: formData.experience,
+          isDownsell: isDownsellActive,
         });
-        await new Promise(r => setTimeout(r, 1500));
-        setIsSuccess(true);
-      } catch (error) {
-        alert('Error al enviar. Intenta de nuevo.');
-      } finally {
-        setIsSubmitting(false);
-      }
+        return;
     }
 
-    // Track successful form submission (once only)
-    trackFormSubmission({
-      name: formData.name,
-      capital: formData.capital,
-      experience: formData.experience,
-      isDownsell: isDownsellActive,
-    });
+    try {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      await new Promise(r => setTimeout(r, 1500));
+      setIsSuccess(true);
+
+      // Track successful form submission (production mode)
+      trackFormSubmission({
+        name: formData.name,
+        capital: formData.capital,
+        experience: formData.experience,
+        isDownsell: isDownsellActive,
+      });
+    } catch (error) {
+      alert('Error al enviar. Intenta de nuevo.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCloseAttempt = () => {
