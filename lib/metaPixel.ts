@@ -2,10 +2,9 @@ const META_PIXEL_ID = '1194541592872537';
 declare global {
   interface Window {
     fbq: (
-      action: 'init' | 'track' | 'trackCustom',
+      action: 'init' | 'track',
       eventOrId: string,
-      params?: Record<string, unknown>,
-      options?: { eventID?: string }
+      params?: Record<string, unknown>
     ) => void;
     _fbq: unknown;
   }
@@ -143,12 +142,12 @@ export const trackEvent = (
   }
 
   const eventId = generateEventId();
+  const eventData = params || {};
 
-  if (params) {
-    window.fbq('track', event, params, { eventID: eventId });
-  } else {
-    window.fbq('track', event, {}, { eventID: eventId });
-  }
+  // Add eventID to the data object
+  eventData.eventID = eventId;
+
+  window.fbq('track', event, eventData);
 
   if (eventKey) {
     markEventFired(eventKey);
@@ -171,7 +170,10 @@ export const trackCustomEvent = (
   }
 
   const eventId = generateEventId();
-  window.fbq('trackCustom', eventName, params || {}, { eventID: eventId });
+  const eventData = params || {};
+  eventData.eventID = eventId;
+
+  window.fbq('track', eventName, eventData);
 
   if (process.env.NODE_ENV === 'development') {
     console.log(`[Meta Pixel] Tracked custom: ${eventName}`, { eventId, params });
