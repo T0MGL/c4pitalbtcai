@@ -3,13 +3,6 @@ import { Navbar } from './components/Navbar';
 import { HeroVSL } from './components/HeroVSL';
 import { initMetaPixel, trackPageView, trackViewContent } from './lib/metaPixel';
 
-// --- COMPONENTES CRÍTICOS (Carga inmediata) ---
-// Navbar y HeroVSL se importan arriba de forma estándar para asegurar 
-// que el "Above the Fold" sea instantáneo (LCP optimizado).
-
-// --- COMPONENTES SECUNDARIOS (Code Splitting) ---
-// Usamos lazy para dividir el bundle, PERO los pre-cargaremos automáticamente
-// para que el usuario no vea "cargando" al bajar.
 const Performance = lazy(() => import('./components/Performance').then(module => ({ default: module.Performance })));
 const WealthSimulator = lazy(() => import('./components/WealthSimulator').then(module => ({ default: module.WealthSimulator })));
 const Features = lazy(() => import('./components/Features').then(module => ({ default: module.Features })));
@@ -45,7 +38,6 @@ function App() {
   };
 
   useEffect(() => {
-    // 1. ROUTING SIMPLE (path-based)
     const handleRouteChange = () => {
       const path = window.location.pathname;
       if (path === '/crm') setView('crm');
@@ -54,27 +46,19 @@ function App() {
     handleRouteChange();
     window.addEventListener('popstate', handleRouteChange);
 
-    // 2. PRECARGA INTELIGENTE (Eager Preloading)
-    // Esto descarga los siguientes bloques en segundo plano INMEDIATAMENTE después
-    // de que el sitio carga, sin esperar al scroll del usuario.
     const preloadApp = async () => {
-      // Prioridad 1: Lo que está justo debajo del Hero (Bloque Lógico)
-      // Pequeño delay para dejar que el navegador pinte el Hero primero
       await new Promise(r => setTimeout(r, 100));
       import('./components/Performance');
 
-      // Prioridad 2: Gráficas pesadas, Pricing y Calculadora (Bloque Interactivo)
       await new Promise(r => setTimeout(r, 300));
       import('./components/WealthSimulator');
       import('./components/Pricing');
 
-      // Prioridad 3: Resto de la página (Bloque Social/Venta)
       await new Promise(r => setTimeout(r, 500));
       import('./components/Features');
       import('./components/Comparison');
       import('./components/Testimonials');
 
-      // Prioridad 4: Footer y Modales
       await new Promise(r => setTimeout(r, 1000));
       import('./components/Faq');
       import('./components/Footer');
@@ -82,7 +66,6 @@ function App() {
       import('./components/QualificationForm');
     };
 
-    // Ejecutar precarga solo si no estamos en la vista de CRM
     if (window.location.pathname !== '/crm') {
       preloadApp();
     }
@@ -90,16 +73,10 @@ function App() {
     return () => window.removeEventListener('popstate', handleRouteChange);
   }, []);
 
-  // META PIXEL INITIALIZATION
-  // Initialize once on mount and track PageView + ViewContent
   useEffect(() => {
-    // Initialize the pixel (safe to call multiple times - it checks internally)
     initMetaPixel();
-
-    // Track PageView (only fires once per session due to internal deduplication)
     trackPageView();
 
-    // Track ViewContent for the main landing page
     if (window.location.pathname !== '/crm') {
       trackViewContent({
         content_name: 'Capital BTC AI - Landing Page',
@@ -146,32 +123,21 @@ function App() {
 
   return (
     <div className="min-h-screen bg-brand-dark overflow-x-hidden">
-      {/* 
-         ESTRATEGIA ANTI-LAYOUT SHIFT:
-         Cada Suspense tiene un contenedor con una altura mínima aproximada (min-h).
-         Esto reserva el espacio en la barra de scroll antes de que llegue el contenido,
-         evitando saltos bruscos.
-      */}
-
-      {/* PRELOADER */}
       {showPreloader && (
         <Preloader onFinish={() => setShowPreloader(false)} />
       )}
 
-      {/* BLOQUE 1: INMEDIATO */}
       <Navbar />
       <HeroVSL />
 
       <div className="relative">
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-brand-gold/50 to-transparent"></div>
 
-        {/* BLOQUE 2: RESULTADOS Y TESIS */}
         <Suspense fallback={<div className="w-full min-h-[600px] bg-brand-dark" />}>
           <Performance />
         </Suspense>
       </div>
 
-      {/* BLOQUE 3: INTERACTIVO (GRAFICAS) */}
       <Suspense fallback={<div className="w-full min-h-[600px] bg-brand-dark" />}>
         <WealthSimulator />
       </Suspense>
@@ -184,7 +150,6 @@ function App() {
         <Features />
       </Suspense>
 
-      {/* BLOQUE 4: CIERRE Y PRUEBA SOCIAL */}
       <Suspense fallback={<div className="w-full min-h-[500px] bg-brand-dark" />}>
         <Comparison />
       </Suspense>
@@ -201,7 +166,6 @@ function App() {
         <Footer />
       </Suspense>
 
-      {/* ELEMENTOS FLOTANTES */}
       <Suspense fallback={null}>
         <StickyCTA />
       </Suspense>

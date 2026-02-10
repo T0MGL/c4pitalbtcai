@@ -7,11 +7,10 @@ import {
   trackDownsellActivated,
 } from '../lib/metaPixel';
 
-const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL || ''; 
+const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL || '';
 
 type ViewMode = 'default' | 'exit-warning' | 'downsell';
 
-// Mapa básico de prefijos a banderas
 const COUNTRY_FLAGS: Record<string, string> = {
     '1': '🇺🇸',   // USA / Canada
     '52': '🇲🇽',  // Mexico
@@ -37,9 +36,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
 
 export const QualificationForm: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  
-  // Ahora tenemos 5 pasos más granulares para una experiencia conversacional
-  // 1. Obstáculo -> 2. Experiencia -> 3. Capital -> 4. Meta -> 5. Contacto
+
   const [step, setStep] = useState(1);
   const totalSteps = 5;
 
@@ -47,28 +44,25 @@ export const QualificationForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isDownsellActive, setIsDownsellActive] = useState(false);
-  
-  // Mensaje dinámico para hacer sentir al usuario "entendido"
+
   const [dynamicHeader, setDynamicHeader] = useState("");
-  const [flag, setFlag] = useState("🌐"); // Default globe
+  const [flag, setFlag] = useState("🌐");
 
   const [formData, setFormData] = useState({
     name: '',
-    phone: '',
+    phone: '+',
     capital: '',
     experience: '',
-    mainObstacle: '', 
-    incomeGoal: '',   
-    notes: ''         
+    mainObstacle: '',
+    incomeGoal: '',
+    notes: ''
   });
 
-  // Track if form open event has been fired this session (avoid duplicates)
   const hasTrackedOpen = useRef(false);
 
   useEffect(() => {
     const handleOpen = () => {
       setIsOpen(true);
-      // Track form open (InitiateCheckout) - only once per session
       if (!hasTrackedOpen.current) {
         trackFormOpen();
         hasTrackedOpen.current = true;
@@ -78,7 +72,6 @@ export const QualificationForm: React.FC = () => {
     return () => window.removeEventListener('open-qualification-form', handleOpen);
   }, []);
 
-  // SCROLL LOCK
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -96,7 +89,6 @@ export const QualificationForm: React.FC = () => {
     };
   }, [isOpen]);
 
-  // Detectar bandera
   useEffect(() => {
       const rawNumber = formData.phone.replace(/\D/g, '');
       let foundFlag = "🌐";
@@ -114,7 +106,12 @@ export const QualificationForm: React.FC = () => {
   }, [formData.phone]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    let value = e.target.value;
+    // Ensure phone always starts with "+"
+    if (e.target.name === 'phone' && !value.startsWith('+')) {
+      value = '+' + value.replace(/\+/g, '');
+    }
+    setFormData({ ...formData, [e.target.name]: value });
   };
 
   // Step names for tracking

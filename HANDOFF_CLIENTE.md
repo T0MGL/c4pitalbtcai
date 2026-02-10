@@ -267,5 +267,4 @@ Cualquier modificación fuera del alcance de este proyecto:
 
 ---
 
-**Documento preparado por el equipo de desarrollo**
 *Todos los derechos reservados © 2026*

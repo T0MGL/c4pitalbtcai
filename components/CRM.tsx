@@ -22,7 +22,6 @@ export const CRM: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 30;
 
-  // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -40,7 +39,6 @@ export const CRM: React.FC = () => {
     }
   };
 
-  // --- MOCK DATA PARA DEMOSTRACIÓN VISUAL (Si falla la API o en Desarrollo) ---
   const MOCK_LEADS: Lead[] = [
     { id: '1', date: new Date().toISOString(), name: 'Carlos Mendoza', phone: '5215512345678', capital: '$5,000 - $10,000 USD', experience: 'Intermedio', goal: 'Vivir del Trading', status: 'new' },
     { id: '2', date: new Date(Date.now() - 86400000).toISOString(), name: 'Sofia Rodriguez', phone: '34611223344', capital: 'Más de $10,000 USD', experience: 'Experto', goal: 'Patrimonio LP', status: 'contacted' },
@@ -48,35 +46,28 @@ export const CRM: React.FC = () => {
     { id: '4', date: new Date(Date.now() - 250000000).toISOString(), name: 'Ana Lopez', phone: '13051234567', capital: '$1,000 - $5,000 USD', experience: 'Principiante', goal: 'Ahorro', status: 'new' },
   ];
 
-  // Parse Spanish date format like "27/1/2026, 6:36:45 p. m." or "28/1/2026, 12:50:21 a. m."
   const parseSpanishDate = (dateStr: string): string => {
     if (!dateStr) return new Date().toISOString();
 
-    // If already ISO format, return as-is
     if (dateStr.includes('T') || dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
       return dateStr;
     }
 
     try {
-      // Format: "27/1/2026, 6:36:45 p. m." or "28/1/2026, 12:50:21 a. m."
       const isPM = dateStr.toLowerCase().includes('p. m.') || dateStr.toLowerCase().includes('pm');
       const isAM = dateStr.toLowerCase().includes('a. m.') || dateStr.toLowerCase().includes('am');
 
-      // Remove AM/PM markers
       const cleanedStr = dateStr
         .replace(/\s*[ap]\.\s*m\.\s*/gi, '')
         .replace(/\s*[ap]m\s*/gi, '')
         .trim();
 
-      // Split date and time
       const [datePart, timePart] = cleanedStr.split(',').map(s => s.trim());
 
       if (!datePart) return new Date().toISOString();
 
-      // Parse date: "27/1/2026"
       const [day, month, year] = datePart.split('/').map(Number);
 
-      // Parse time: "6:36:45" or "12:50:21"
       let hours = 0, minutes = 0, seconds = 0;
       if (timePart) {
         const timeParts = timePart.split(':').map(Number);
@@ -84,7 +75,6 @@ export const CRM: React.FC = () => {
         minutes = timeParts[1] || 0;
         seconds = timeParts[2] || 0;
 
-        // Convert to 24-hour format
         if (isPM && hours !== 12) {
           hours += 12;
         } else if (isAM && hours === 12) {
@@ -100,7 +90,6 @@ export const CRM: React.FC = () => {
     }
   };
 
-  // Map Google Sheets Spanish columns to our Lead interface
   const mapSheetDataToLead = (row: Record<string, unknown>): Lead => {
     return {
       id: String(row.id || row.Id || row.ID || crypto.randomUUID()),
@@ -121,24 +110,20 @@ export const CRM: React.FC = () => {
   const fetchLeads = async () => {
     setLoading(true);
 
-    // DEV MODE CHECK: Si la URL es placeholder, usamos mock + local storage
     if (!GOOGLE_SCRIPT_URL) {
         console.warn("CRM en Modo Desarrollo: Usando datos locales y mock.");
 
         setTimeout(() => {
             let localLeads: Lead[] = [];
             try {
-                // Recuperar leads guardados por el QualificationForm
                 const stored = localStorage.getItem('capital_btc_crm_leads');
                 if (stored) {
                     localLeads = JSON.parse(stored);
                 }
             } catch(e) { console.error("Error reading local leads", e); }
 
-            // Merge local leads with mock leads
             const allLeads = [...localLeads, ...MOCK_LEADS];
 
-            // Sort by date desc (Most recent first)
             allLeads.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
             setLeads(allLeads);
@@ -152,9 +137,7 @@ export const CRM: React.FC = () => {
       const data = await response.json();
 
       if (Array.isArray(data) && data.length > 0) {
-          // Map the data from Google Sheets format to our Lead format
           const mappedLeads = data.map(mapSheetDataToLead);
-          // Sort by date descending (most recent first)
           mappedLeads.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
           setLeads(mappedLeads);
       } else {
@@ -169,10 +152,9 @@ export const CRM: React.FC = () => {
   };
 
   const updateStatus = async (id: string, newStatus: Lead['status']) => {
-    // Optimistic Update
     setLeads(prev => prev.map(l => l.id === id ? { ...l, status: newStatus } : l));
 
-    if (!GOOGLE_SCRIPT_URL) return; // No intentar enviar a placeholder
+    if (!GOOGLE_SCRIPT_URL) return;
 
     try {
       await fetch(GOOGLE_SCRIPT_URL, {
@@ -207,6 +189,98 @@ export const CRM: React.FC = () => {
   const handleBackToSite = () => {
       window.location.hash = '';
       window.scrollTo(0, 0);
+  };
+
+  const statusLabel = (status: string) => {
+    const map: Record<string, string> = { new: 'Nuevo', contacted: 'Contactado', converted: 'Convertido', lost: 'Perdido' };
+    return map[status] || status;
+  };
+
+  const getFileName = (ext: string) => {
+    const date = new Date().toISOString().slice(0, 10);
+    return `capital-btc-leads-${date}.${ext}`;
+  };
+
+  const exportToCSV = (data: Lead[]) => {
+    if (data.length === 0) return;
+    const headers = ['Estado', 'Fecha', 'Nombre', 'WhatsApp', 'Capital', 'Experiencia', 'Objetivo'];
+    const rows = data.map(lead => [
+      statusLabel(lead.status),
+      new Date(lead.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      lead.name,
+      lead.phone,
+      lead.capital,
+      lead.experience,
+      lead.goal.replace(/,/g, ';'),
+    ]);
+
+    const csvContent = '\uFEFF' + [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = getFileName('csv');
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportToPDF = async (data: Lead[]) => {
+    if (data.length === 0) return;
+    try {
+      // @ts-ignore - dynamic import from esm.sh CDN
+      const jsPDFModule = await import('https://esm.sh/jspdf@2.5.2');
+      // @ts-ignore - dynamic import from esm.sh CDN
+      const autoTableModule = await import('https://esm.sh/jspdf-autotable@3.8.4');
+      const jsPDF = jsPDFModule.default || jsPDFModule.jsPDF;
+      const autoTable = autoTableModule.default || autoTableModule.applyPlugin;
+
+      const doc = new jsPDF({ orientation: 'landscape' });
+
+      // Register autoTable plugin if needed
+      if (typeof autoTable === 'function' && !(doc as any).autoTable) {
+        autoTable(doc);
+      }
+
+      // Header
+      doc.setFillColor(5, 8, 15);
+      doc.rect(0, 0, doc.internal.pageSize.getWidth(), 30, 'F');
+      doc.setTextColor(232, 193, 112);
+      doc.setFontSize(18);
+      doc.text('CAPITAL BTC AI', 14, 15);
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text('Reporte de Clientes', 14, 22);
+      const today = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+      doc.text(`${today}  |  ${data.length} registros`, doc.internal.pageSize.getWidth() - 14, 22, { align: 'right' });
+
+      // Table
+      const headers = [['Estado', 'Fecha', 'Nombre', 'WhatsApp', 'Capital', 'Experiencia', 'Objetivo']];
+      const rows = data.map(lead => [
+        statusLabel(lead.status),
+        new Date(lead.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        lead.name,
+        lead.phone,
+        lead.capital,
+        lead.experience,
+        lead.goal,
+      ]);
+
+      (doc as any).autoTable({
+        head: headers,
+        body: rows,
+        startY: 35,
+        theme: 'grid',
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [11, 16, 27], textColor: [232, 193, 112], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        columnStyles: { 6: { cellWidth: 50 } },
+      });
+
+      doc.save(getFileName('pdf'));
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error al generar el PDF. Intenta de nuevo.');
+    }
   };
 
   // --- FILTROS Y PAGINACIÓN ---
@@ -298,7 +372,6 @@ export const CRM: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#05080f] text-slate-200 font-sans">
-      {/* HEADER */}
       <header className="bg-[#0B101B] border-b border-white/10 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -309,29 +382,51 @@ export const CRM: React.FC = () => {
                   <span className="text-xs font-mono text-slate-500 hidden md:block">
                       {!GOOGLE_SCRIPT_URL ? 'Modo Desarrollo (Mock Data)' : 'Conectado'}
                   </span>
-                  
+
+                  <button
+                    onClick={() => exportToCSV(filteredLeads)}
+                    disabled={loading || filteredLeads.length === 0}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-wider text-brand-green border border-brand-green/30 bg-brand-green/10 rounded-lg hover:bg-brand-green hover:text-brand-dark transition-all disabled:opacity-40 disabled:pointer-events-none"
+                    title="Exportar CSV (Google Sheets)"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M3 14h18M3 6h18M3 18h18"/></svg>
+                    <span className="hidden md:inline">CSV</span>
+                  </button>
+
+                  <button
+                    onClick={() => exportToPDF(filteredLeads)}
+                    disabled={loading || filteredLeads.length === 0}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-wider text-red-400 border border-red-400/30 bg-red-400/10 rounded-lg hover:bg-red-500 hover:text-white transition-all disabled:opacity-40 disabled:pointer-events-none"
+                    title="Exportar PDF"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                    <span className="hidden md:inline">PDF</span>
+                  </button>
+
                   <Button onClick={handleBackToSite} variant="secondary" className="!py-1.5 !px-3 md:!px-4 text-[10px] md:text-xs">
                       ← Volver al Sitio
                   </Button>
 
-                  <Button onClick={fetchLeads} disabled={loading} className="!py-1.5 !px-3 md:!px-4 text-[10px] md:text-xs disabled:opacity-50">
-                      {loading ? (
-                          <span className="flex items-center gap-2">
-                              <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              <span className="hidden md:inline">Cargando...</span>
-                          </span>
-                      ) : 'Actualizar'}
-                  </Button>
+                  <button
+                    onClick={fetchLeads}
+                    disabled={loading}
+                    className="p-2 rounded-lg border border-white/10 text-slate-400 hover:text-white hover:border-white/30 transition-all disabled:pointer-events-none"
+                    title="Actualizar"
+                  >
+                      <svg
+                        className={`w-4 h-4 transition-transform ${loading ? 'animate-spin' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                  </button>
               </div>
           </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-          
-          {/* STATS BAR */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               {[
                   { label: 'Total Leads', val: leads.length, color: 'text-white' },
@@ -350,7 +445,6 @@ export const CRM: React.FC = () => {
               ))}
           </div>
 
-          {/* FILTERS */}
           <div className="flex flex-wrap gap-2 mb-6">
               {['all', 'new', 'contacted', 'converted', 'lost'].map(status => (
                   <button
@@ -367,7 +461,6 @@ export const CRM: React.FC = () => {
               ))}
           </div>
 
-          {/* TABLE */}
           <div className="bg-[#0B101B] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
               <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
@@ -383,35 +476,28 @@ export const CRM: React.FC = () => {
                       </thead>
                       <tbody className="divide-y divide-white/5 text-sm">
                           {loading ? (
-                              // Skeleton loading rows
                               [...Array(5)].map((_, i) => (
                                   <tr key={`skeleton-${i}`} className="animate-pulse">
-                                      {/* STATUS skeleton */}
                                       <td className="p-4">
                                           <div className="h-5 w-16 bg-white/10 rounded"></div>
                                       </td>
-                                      {/* DATE skeleton */}
                                       <td className="p-4">
                                           <div className="h-4 w-14 bg-white/10 rounded mb-1"></div>
                                           <div className="h-3 w-10 bg-white/5 rounded"></div>
                                       </td>
-                                      {/* LEAD INFO skeleton */}
                                       <td className="p-4">
                                           <div className="h-4 w-28 bg-white/10 rounded mb-1"></div>
                                           <div className="h-3 w-24 bg-brand-gold/20 rounded"></div>
                                       </td>
-                                      {/* PROFILE skeleton */}
                                       <td className="p-4">
                                           <div className="flex flex-col gap-1">
                                               <div className="h-5 w-32 bg-white/5 rounded"></div>
                                               <div className="h-5 w-24 bg-white/5 rounded"></div>
                                           </div>
                                       </td>
-                                      {/* GOAL skeleton */}
                                       <td className="p-4">
                                           <div className="h-4 w-36 bg-white/5 rounded"></div>
                                       </td>
-                                      {/* ACTIONS skeleton */}
                                       <td className="p-4">
                                           <div className="flex justify-end gap-2">
                                               <div className="h-8 w-8 bg-white/5 rounded"></div>
@@ -428,27 +514,23 @@ export const CRM: React.FC = () => {
                           ) : (
                               paginatedLeads.map((lead) => (
                                   <tr key={lead.id} className="hover:bg-white/[0.02] transition-colors group">
-                                      {/* STATUS */}
                                       <td className="p-4">
                                           <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${getStatusColor(lead.status)}`}>
                                               {lead.status}
                                           </span>
                                       </td>
-                                      
-                                      {/* DATE */}
+
                                       <td className="p-4 text-slate-400 font-mono text-xs whitespace-nowrap">
                                           {new Date(lead.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
                                           <br/>
                                           {new Date(lead.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                       </td>
 
-                                      {/* LEAD INFO */}
                                       <td className="p-4">
                                           <div className="font-bold text-white">{lead.name}</div>
                                           <div className="text-xs text-brand-gold font-mono">{lead.phone}</div>
                                       </td>
 
-                                      {/* PROFILE */}
                                       <td className="p-4">
                                           <div className="flex flex-col gap-1">
                                               <span className="text-xs text-slate-300 bg-white/5 px-2 py-0.5 rounded border border-white/10 w-fit">
@@ -460,28 +542,24 @@ export const CRM: React.FC = () => {
                                           </div>
                                       </td>
 
-                                      {/* GOAL (Truncated) */}
                                       <td className="p-4 max-w-[200px]">
                                           <p className="text-xs text-slate-400 truncate" title={lead.goal}>
                                               {lead.goal}
                                           </p>
                                       </td>
 
-                                      {/* ACTIONS */}
                                       <td className="p-4 text-right">
                                           <div className="flex items-center justify-end gap-2">
-                                              {/* WhatsApp */}
-                                              <button 
+                                              <button
                                                 onClick={() => openWhatsApp(lead)}
                                                 className="p-2 bg-brand-green/10 text-brand-green border border-brand-green/30 rounded hover:bg-brand-green hover:text-brand-dark transition-all"
                                                 title="Enviar WhatsApp"
                                               >
                                                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
                                               </button>
-                                              
-                                              {/* Convert */}
+
                                               {lead.status !== 'converted' && (
-                                                <button 
+                                                <button
                                                     onClick={() => updateStatus(lead.id, 'converted')}
                                                     className="p-2 bg-brand-gold/10 text-brand-gold border border-brand-gold/30 rounded hover:bg-brand-gold hover:text-brand-dark transition-all"
                                                     title="Marcar como Convertido (Venta)"
@@ -490,7 +568,6 @@ export const CRM: React.FC = () => {
                                                 </button>
                                               )}
 
-                                              {/* Lost */}
                                               {lead.status !== 'lost' && (
                                                 <button 
                                                     onClick={() => updateStatus(lead.id, 'lost')}
@@ -509,7 +586,6 @@ export const CRM: React.FC = () => {
                   </table>
               </div>
 
-              {/* PAGINATION */}
               {totalPages > 1 && (
                   <div className="p-4 border-t border-white/10 flex justify-between items-center bg-[#05080f]">
                       <button 

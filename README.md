@@ -1,6 +1,6 @@
 # Capital BTC AI - VSL Landing Page
 
-Sistema de landing page y captura de leads desarrollado por **Bright Idea**.
+Sistema de landing page y captura de leads.
 
 ## Ejecutar Localmente
 
@@ -23,9 +23,5 @@ Sistema de landing page y captura de leads desarrollado por **Bright Idea**.
 ## Estructura del Proyecto
 
 - `/components` - Componentes React
-- `/lib` - Utilidades y helpers
+- `/lib` - Utilidades
 - `/public` - Assets estáticos
-
-## Desarrollado por
-
-**Bright Idea** - Soluciones digitales

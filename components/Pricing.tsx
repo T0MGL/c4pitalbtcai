@@ -5,15 +5,14 @@ import { ScrollReveal } from './ScrollReveal';
 export const Pricing: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState({ hours: '00', minutes: '00', seconds: '00' });
 
-  // Generar partículas para el fondo - Increased count and visibility
   const particles = useMemo(() => Array.from({ length: 40 }).map((_, i) => ({
     left: `${Math.random() * 100}%`,
     top: `${Math.random() * 100}%`,
     animationDelay: `-${Math.random() * 20}s`,
-    animationDuration: `${20 + Math.random() * 20}s`, // Slower, 20-40s duration
-    opacity: 0.2 + Math.random() * 0.4, 
+    animationDuration: `${20 + Math.random() * 20}s`,
+    opacity: 0.2 + Math.random() * 0.4,
     size: Math.random() * 3 + 1,
-    showOnMobile: i < 15 // Limit mobile particles for performance
+    showOnMobile: i < 15
   })), []);
 
   useEffect(() => {

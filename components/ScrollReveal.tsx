@@ -12,10 +12,10 @@ interface ScrollRevealProps {
 export const ScrollReveal: React.FC<ScrollRevealProps> = ({ 
   children, 
   className = "", 
-  direction = "up", 
+  direction = "up",
   distance = "40px",
   delay = 0,
-  duration = 1.0 // Increased default duration for elegance
+  duration = 1.0
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -29,8 +29,8 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
         }
       },
       {
-        threshold: 0.15, // Slightly higher threshold to avoid "pop-in" at very bottom
-        rootMargin: "0px 0px -40px 0px" 
+        threshold: 0.15,
+        rootMargin: "0px 0px -40px 0px"
       }
     );
 
@@ -44,15 +44,12 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
   }, []);
 
   const getTransformStyles = () => {
-    // VISIBLE STATE: Crisp, scaled to 1, natural position
-    if (isVisible) return { 
-        opacity: 1, 
-        transform: 'translate3d(0, 0, 0) scale(1)', 
-        filter: 'blur(0px)' 
+    if (isVisible) return {
+        opacity: 1,
+        transform: 'translate3d(0, 0, 0) scale(1)',
+        filter: 'blur(0px)'
     };
-    
-    // HIDDEN STATE: Blurred, slightly shrunk, offset
-    // Using translate3d for hardware acceleration
+
     switch (direction) {
       case 'up': return { opacity: 0, transform: `translate3d(0, ${distance}, 0) scale(0.96)`, filter: 'blur(8px)' };
       case 'down': return { opacity: 0, transform: `translate3d(0, -${distance}, 0) scale(0.96)`, filter: 'blur(8px)' };
@@ -72,8 +69,7 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
         transitionProperty: 'opacity, transform, filter',
         transitionDuration: `${duration}s`,
         transitionDelay: `${delay}s`,
-        // Custom cubic-bezier for "Apple-style" smooth easing (Ease Out Expo-ish)
-        transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)', 
+        transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
       {children}
