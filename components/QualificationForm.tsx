@@ -38,7 +38,7 @@ export const QualificationForm: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
 
     const [step, setStep] = useState(1);
-    const totalSteps = 5;
+    const totalSteps = 6;
 
     const [viewMode, setViewMode] = useState<ViewMode>('default');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -115,7 +115,7 @@ export const QualificationForm: React.FC = () => {
     };
 
     // Step names for tracking
-    const stepNames = ['Obstacle', 'Experience', 'Capital', 'Goal', 'Contact'];
+    const stepNames = ['Obstacle', 'Experience', 'Capital', 'Goal', 'Country', 'Contact'];
 
     const handleAutoAdvance = (field: string, value: string, nextStepHeader: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -380,7 +380,7 @@ export const QualificationForm: React.FC = () => {
                                     <div>
                                         <span className="text-[10px] font-bold text-brand-gold uppercase tracking-widest block mb-1">Paso {step} de {totalSteps}</span>
                                         <h2 className="text-xl md:text-2xl font-serif font-bold text-white leading-tight">
-                                            {dynamicHeader || "¿Qué te impide lograr rentabilidad hoy?"}
+                                            {step === 5 ? "Elije el país de WhatsApp de tu país" : (dynamicHeader || "¿Qué te impide lograr rentabilidad hoy?")}
                                         </h2>
                                     </div>
                                 </div>
@@ -487,8 +487,46 @@ export const QualificationForm: React.FC = () => {
                                     </>
                                 )}
 
-                                {/* Step 5: Contacto (Cierre) */}
                                 {step === 5 && (
+                                    <div className="grid grid-cols-2 gap-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {[
+                                            { code: '57', name: 'Colombia', flag: '🇨🇴' },
+                                            { code: '52', name: 'México', flag: '🇲🇽' },
+                                            { code: '34', name: 'España', flag: '🇪🇸' },
+                                            { code: '54', name: 'Argentina', flag: '🇦🇷' },
+                                            { code: '56', name: 'Chile', flag: '🇨🇱' },
+                                            { code: '51', name: 'Perú', flag: '🇵🇪' },
+                                            { code: '593', name: 'Ecuador', flag: '🇪🇨' },
+                                            { code: '58', name: 'Venezuela', flag: '🇻🇪' },
+                                            { code: '506', name: 'Costa Rica', flag: '🇨🇷' },
+                                            { code: '507', name: 'Panamá', flag: '🇵🇦' },
+                                            { code: '598', name: 'Uruguay', flag: '🇺🇾' },
+                                            { code: '503', name: 'El Salvador', flag: '🇸🇻' },
+                                            { code: '502', name: 'Guatemala', flag: '🇬🇹' },
+                                            { code: '504', name: 'Honduras', flag: '🇭🇳' },
+                                            { code: '591', name: 'Bolivia', flag: '🇧🇴' },
+                                            { code: '595', name: 'Paraguay', flag: '🇵🇾' },
+                                            { code: '1', name: 'USA', flag: '🇺🇸' },
+                                            { code: '1', name: 'P. Rico', flag: '🇵🇷' },
+                                            { code: '1', name: 'R. Dom', flag: '🇩🇴' },
+                                        ].map((c) => (
+                                            <button
+                                                key={`${c.name}-${c.code}`}
+                                                onClick={() => handleAutoAdvance('phone', `+${c.code} `, "Finaliza tu solicitud")}
+                                                className="group flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-[#0F1522] hover:border-brand-gold/50 transition-all duration-300"
+                                            >
+                                                <span className="text-xl">{c.flag}</span>
+                                                <div className="text-left">
+                                                    <p className="text-xs font-bold text-white group-hover:text-brand-gold transition-colors">{c.name}</p>
+                                                    <p className="text-[10px] text-slate-500 font-mono">+{c.code}</p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Step 6: Contacto (Cierre) */}
+                                {step === 6 && (
                                     <div className="space-y-6 animate-fade-in-up">
                                         <div className="bg-brand-gold/5 border border-brand-gold/10 p-4 rounded-xl text-center">
                                             <p className="text-brand-gold font-bold text-sm mb-1">¡Perfil Compatible!</p>
