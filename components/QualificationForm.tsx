@@ -154,7 +154,7 @@ export const QualificationForm: React.FC = () => {
             date: new Date().toISOString(),
             name: formData.name,
             email: "no-email@provided.com",
-            phone: formData.phone,
+            phone: "'" + formData.phone,
             capital: formData.capital,
             experience: formData.experience,
             goal: finalGoalDescription,
@@ -380,7 +380,7 @@ export const QualificationForm: React.FC = () => {
                                     <div>
                                         <span className="text-[10px] font-bold text-brand-gold uppercase tracking-widest block mb-1">Paso {step} de {totalSteps}</span>
                                         <h2 className="text-xl md:text-2xl font-serif font-bold text-white leading-tight">
-                                            {step === 5 ? "Elije el país de WhatsApp de tu país" : (dynamicHeader || "¿Qué te impide lograr rentabilidad hoy?")}
+                                            {step === 5 ? "¿De qué país es tu WhatsApp?" : (dynamicHeader || "¿Qué te impide lograr rentabilidad hoy?")}
                                         </h2>
                                     </div>
                                 </div>

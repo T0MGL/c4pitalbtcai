@@ -4,6 +4,34 @@ import { LogoV2 } from './LogoV2';
 
 const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL || '';
 
+const COUNTRY_DATA: Record<string, { flag: string; name: string }> = {
+  '1': { flag: '🇺🇸', name: 'USA / Puerto Rico / R. Dom' },
+  '52': { flag: '🇲🇽', name: 'México' },
+  '34': { flag: '🇪🇸', name: 'España' },
+  '54': { flag: '🇦🇷', name: 'Argentina' },
+  '57': { flag: '🇨🇴', name: 'Colombia' },
+  '56': { flag: '🇨🇱', name: 'Chile' },
+  '51': { flag: '🇵🇪', name: 'Perú' },
+  '593': { flag: '🇪🇨', name: 'Ecuador' },
+  '58': { flag: '🇻🇪', name: 'Venezuela' },
+  '506': { flag: '🇨🇷', name: 'Costa Rica' },
+  '507': { flag: '🇵🇦', name: 'Panamá' },
+  '598': { flag: '🇺🇾', name: 'Uruguay' },
+  '503': { flag: '🇸🇻', name: 'El Salvador' },
+  '502': { flag: '🇬🇹', name: 'Guatemala' },
+  '504': { flag: '🇭🇳', name: 'Honduras' },
+  '591': { flag: '🇧🇴', name: 'Bolivia' },
+  '595': { flag: '🇵🇾', name: 'Paraguay' },
+};
+
+const getCountryByPhone = (phone: string) => {
+  const clean = phone.replace(/[^0-9]/g, '');
+  if (clean.length >= 3 && COUNTRY_DATA[clean.substring(0, 3)]) return COUNTRY_DATA[clean.substring(0, 3)];
+  if (clean.length >= 2 && COUNTRY_DATA[clean.substring(0, 2)]) return COUNTRY_DATA[clean.substring(0, 2)];
+  if (clean.length >= 1 && COUNTRY_DATA[clean.substring(0, 1)]) return COUNTRY_DATA[clean.substring(0, 1)];
+  return { flag: '🌐', name: 'Desconocido' };
+};
+
 interface Lead {
   id: string;
   date: string;
@@ -95,7 +123,7 @@ export const CRM: React.FC = () => {
       id: String(row.id || row.Id || row.ID || crypto.randomUUID()),
       date: parseSpanishDate(String(row.Fecha || row.fecha || row.date || '')),
       name: String(row.Nombre || row.nombre || row.name || ''),
-      phone: String(row.WhatsApp || row.whatsapp || row.phone || row.Phone || ''),
+      phone: String(row.WhatsApp || row.whatsapp || row.phone || row.Phone || '').replace(/^'/, ''),
       capital: String(row.Capital || row.capital || ''),
       experience: String(row.Experiencia || row.experiencia || row.experience || ''),
       goal: String(row.Objetivo || row.objetivo || row.goal || ''),
@@ -111,25 +139,26 @@ export const CRM: React.FC = () => {
     setLoading(true);
 
     if (!GOOGLE_SCRIPT_URL) {
-        console.warn("CRM en Modo Desarrollo: Usando datos locales y mock.");
+      console.warn("CRM en Modo Desarrollo: Usando datos locales y mock.");
 
-        setTimeout(() => {
-            let localLeads: Lead[] = [];
-            try {
-                const stored = localStorage.getItem('capital_btc_crm_leads');
-                if (stored) {
-                    localLeads = JSON.parse(stored);
-                }
-            } catch(e) { console.error("Error reading local leads", e); }
+      setTimeout(() => {
+        let localLeads: Lead[] = [];
+        try {
+          const stored = localStorage.getItem('capital_btc_crm_leads');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            localLeads = Array.isArray(parsed) ? parsed.map(mapSheetDataToLead) : [];
+          }
+        } catch (e) { console.error("Error reading local leads", e); }
 
-            const allLeads = [...localLeads, ...MOCK_LEADS];
+        const allLeads = [...localLeads, ...MOCK_LEADS];
 
-            allLeads.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        allLeads.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-            setLeads(allLeads);
-            setLoading(false);
-        }, 800);
-        return;
+        setLeads(allLeads);
+        setLoading(false);
+      }, 800);
+      return;
     }
 
     try {
@@ -137,11 +166,11 @@ export const CRM: React.FC = () => {
       const data = await response.json();
 
       if (Array.isArray(data) && data.length > 0) {
-          const mappedLeads = data.map(mapSheetDataToLead);
-          mappedLeads.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-          setLeads(mappedLeads);
+        const mappedLeads = data.map(mapSheetDataToLead);
+        mappedLeads.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setLeads(mappedLeads);
       } else {
-          setLeads(MOCK_LEADS);
+        setLeads(MOCK_LEADS);
       }
     } catch (error) {
       console.error("Error fetching leads (usando mock data):", error);
@@ -176,19 +205,19 @@ export const CRM: React.FC = () => {
 
   const openWhatsApp = (lead: Lead) => {
     if (lead.status === 'new') {
-        updateStatus(lead.id, 'contacted');
+      updateStatus(lead.id, 'contacted');
     }
 
     const firstName = lead.name.split(' ')[0];
     const message = `Hola ${firstName}, soy del equipo de Capital BTC AI. 👋\n\nRevisé tu perfil de admisión:\n• Capital: ${lead.capital}\n• Experiencia: ${lead.experience}\n\nTu perfil encaja con nuestra estrategia privada. ¿Tienes 5 minutos para explicarte cómo funciona?`;
-    
+
     const url = `https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
   };
 
   const handleBackToSite = () => {
-      window.location.hash = '';
-      window.scrollTo(0, 0);
+    window.location.hash = '';
+    window.scrollTo(0, 0);
   };
 
   const statusLabel = (status: string) => {
@@ -297,13 +326,13 @@ export const CRM: React.FC = () => {
   const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
 
   const getStatusColor = (status: string) => {
-      switch(status) {
-          case 'new': return 'bg-blue-500/20 text-blue-400 border-blue-500/50';
-          case 'contacted': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
-          case 'converted': return 'bg-brand-green/20 text-brand-green border-brand-green/50';
-          case 'lost': return 'bg-red-500/20 text-red-400 border-red-500/50';
-          default: return 'bg-slate-500/20 text-slate-400';
-      }
+    switch (status) {
+      case 'new': return 'bg-blue-500/20 text-blue-400 border-blue-500/50';
+      case 'contacted': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
+      case 'converted': return 'bg-brand-green/20 text-brand-green border-brand-green/50';
+      case 'lost': return 'bg-red-500/20 text-red-400 border-red-500/50';
+      default: return 'bg-slate-500/20 text-slate-400';
+    }
   };
 
   // Login screen
@@ -373,239 +402,258 @@ export const CRM: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#05080f] text-slate-200 font-sans">
       <header className="bg-[#0B101B] border-b border-white/10 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                   <LogoV2 className="w-8 h-8" withText={false} />
-                   <h1 className="font-serif font-bold text-white tracking-wide">CAPITAL BTC <span className="text-brand-gold">CRM</span></h1>
-              </div>
-              <div className="flex items-center gap-2 md:gap-4">
-                  <span className="text-xs font-mono text-slate-500 hidden md:block">
-                      {!GOOGLE_SCRIPT_URL ? 'Modo Desarrollo (Mock Data)' : 'Conectado'}
-                  </span>
-
-                  <button
-                    onClick={() => exportToCSV(filteredLeads)}
-                    disabled={loading || filteredLeads.length === 0}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-wider text-brand-green border border-brand-green/30 bg-brand-green/10 rounded-lg hover:bg-brand-green hover:text-brand-dark transition-all disabled:opacity-40 disabled:pointer-events-none"
-                    title="Exportar CSV (Google Sheets)"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M3 14h18M3 6h18M3 18h18"/></svg>
-                    <span className="hidden md:inline">CSV</span>
-                  </button>
-
-                  <button
-                    onClick={() => exportToPDF(filteredLeads)}
-                    disabled={loading || filteredLeads.length === 0}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-wider text-red-400 border border-red-400/30 bg-red-400/10 rounded-lg hover:bg-red-500 hover:text-white transition-all disabled:opacity-40 disabled:pointer-events-none"
-                    title="Exportar PDF"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                    <span className="hidden md:inline">PDF</span>
-                  </button>
-
-                  <Button onClick={handleBackToSite} variant="secondary" className="!py-1.5 !px-3 md:!px-4 text-[10px] md:text-xs">
-                      ← Volver al Sitio
-                  </Button>
-
-                  <button
-                    onClick={fetchLeads}
-                    disabled={loading}
-                    className="p-2 rounded-lg border border-white/10 text-slate-400 hover:text-white hover:border-white/30 transition-all disabled:pointer-events-none"
-                    title="Actualizar"
-                  >
-                      <svg
-                        className={`w-4 h-4 transition-transform ${loading ? 'animate-spin' : ''}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                  </button>
-              </div>
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <LogoV2 className="w-8 h-8" withText={false} />
+            <h1 className="font-serif font-bold text-white tracking-wide">CAPITAL BTC <span className="text-brand-gold">CRM</span></h1>
           </div>
+          <div className="flex items-center gap-2 md:gap-4">
+            <span className="text-xs font-mono text-slate-500 hidden md:block">
+              {!GOOGLE_SCRIPT_URL ? 'Modo Desarrollo (Mock Data)' : 'Conectado'}
+            </span>
+
+            <button
+              onClick={() => exportToCSV(filteredLeads)}
+              disabled={loading || filteredLeads.length === 0}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-wider text-brand-green border border-brand-green/30 bg-brand-green/10 rounded-lg hover:bg-brand-green hover:text-brand-dark transition-all disabled:opacity-40 disabled:pointer-events-none"
+              title="Exportar CSV (Google Sheets)"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M3 14h18M3 6h18M3 18h18" /></svg>
+              <span className="hidden md:inline">CSV</span>
+            </button>
+
+            <button
+              onClick={() => exportToPDF(filteredLeads)}
+              disabled={loading || filteredLeads.length === 0}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-wider text-red-400 border border-red-400/30 bg-red-400/10 rounded-lg hover:bg-red-500 hover:text-white transition-all disabled:opacity-40 disabled:pointer-events-none"
+              title="Exportar PDF"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+              <span className="hidden md:inline">PDF</span>
+            </button>
+
+            <Button onClick={handleBackToSite} variant="secondary" className="!py-1.5 !px-3 md:!px-4 text-[10px] md:text-xs">
+              ← Volver al Sitio
+            </Button>
+
+            <button
+              onClick={fetchLeads}
+              disabled={loading}
+              className="p-2 rounded-lg border border-white/10 text-slate-400 hover:text-white hover:border-white/30 transition-all disabled:pointer-events-none"
+              title="Actualizar"
+            >
+              <svg
+                className={`w-4 h-4 transition-transform ${loading ? 'animate-spin' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {[
-                  { label: 'Total Leads', val: leads.length, color: 'text-white' },
-                  { label: 'Nuevos', val: leads.filter(l => l.status === 'new').length, color: 'text-blue-400' },
-                  { label: 'Contactados', val: leads.filter(l => l.status === 'contacted').length, color: 'text-brand-gold' },
-                  { label: 'Cierre (Convertidos)', val: leads.filter(l => l.status === 'converted').length, color: 'text-brand-green' },
-              ].map((stat, i) => (
-                  <div key={i} className="bg-[#0B101B] border border-white/5 p-4 rounded-lg">
-                      <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">{stat.label}</p>
-                      {loading ? (
-                          <div className="h-8 w-12 bg-white/10 rounded animate-pulse mt-1"></div>
-                      ) : (
-                          <p className={`text-2xl font-mono font-bold ${stat.color}`}>{stat.val}</p>
-                      )}
-                  </div>
-              ))}
-          </div>
-
-          <div className="flex flex-wrap gap-2 mb-6">
-              {['all', 'new', 'contacted', 'converted', 'lost'].map(status => (
-                  <button
-                    key={status}
-                    onClick={() => { setFilterStatus(status); setCurrentPage(1); }}
-                    className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border transition-all ${
-                        filterStatus === status 
-                        ? 'bg-brand-gold text-brand-dark border-brand-gold' 
-                        : 'bg-transparent text-slate-500 border-white/10 hover:border-white/30 hover:text-white'
-                    }`}
-                  >
-                      {status === 'all' ? 'Todos' : status}
-                  </button>
-              ))}
-          </div>
-
-          <div className="bg-[#0B101B] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
-              <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                      <thead>
-                          <tr className="bg-white/5 text-[10px] uppercase tracking-widest text-slate-500 font-bold border-b border-white/10">
-                              <th className="p-4">Estado</th>
-                              <th className="p-4">Fecha</th>
-                              <th className="p-4">Lead</th>
-                              <th className="p-4">Perfil (Cap / Exp)</th>
-                              <th className="p-4">Objetivo</th>
-                              <th className="p-4 text-right">Acciones</th>
-                          </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5 text-sm">
-                          {loading ? (
-                              [...Array(5)].map((_, i) => (
-                                  <tr key={`skeleton-${i}`} className="animate-pulse">
-                                      <td className="p-4">
-                                          <div className="h-5 w-16 bg-white/10 rounded"></div>
-                                      </td>
-                                      <td className="p-4">
-                                          <div className="h-4 w-14 bg-white/10 rounded mb-1"></div>
-                                          <div className="h-3 w-10 bg-white/5 rounded"></div>
-                                      </td>
-                                      <td className="p-4">
-                                          <div className="h-4 w-28 bg-white/10 rounded mb-1"></div>
-                                          <div className="h-3 w-24 bg-brand-gold/20 rounded"></div>
-                                      </td>
-                                      <td className="p-4">
-                                          <div className="flex flex-col gap-1">
-                                              <div className="h-5 w-32 bg-white/5 rounded"></div>
-                                              <div className="h-5 w-24 bg-white/5 rounded"></div>
-                                          </div>
-                                      </td>
-                                      <td className="p-4">
-                                          <div className="h-4 w-36 bg-white/5 rounded"></div>
-                                      </td>
-                                      <td className="p-4">
-                                          <div className="flex justify-end gap-2">
-                                              <div className="h-8 w-8 bg-white/5 rounded"></div>
-                                              <div className="h-8 w-8 bg-white/5 rounded"></div>
-                                              <div className="h-8 w-8 bg-white/5 rounded"></div>
-                                          </div>
-                                      </td>
-                                  </tr>
-                              ))
-                          ) : paginatedLeads.length === 0 ? (
-                              <tr>
-                                  <td colSpan={6} className="p-8 text-center text-slate-500">No hay leads en esta vista.</td>
-                              </tr>
-                          ) : (
-                              paginatedLeads.map((lead) => (
-                                  <tr key={lead.id} className="hover:bg-white/[0.02] transition-colors group">
-                                      <td className="p-4">
-                                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${getStatusColor(lead.status)}`}>
-                                              {lead.status}
-                                          </span>
-                                      </td>
-
-                                      <td className="p-4 text-slate-400 font-mono text-xs whitespace-nowrap">
-                                          {new Date(lead.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
-                                          <br/>
-                                          {new Date(lead.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                                      </td>
-
-                                      <td className="p-4">
-                                          <div className="font-bold text-white">{lead.name}</div>
-                                          <div className="text-xs text-brand-gold font-mono">{lead.phone}</div>
-                                      </td>
-
-                                      <td className="p-4">
-                                          <div className="flex flex-col gap-1">
-                                              <span className="text-xs text-slate-300 bg-white/5 px-2 py-0.5 rounded border border-white/10 w-fit">
-                                                  💰 {lead.capital}
-                                              </span>
-                                              <span className="text-xs text-slate-300 bg-white/5 px-2 py-0.5 rounded border border-white/10 w-fit">
-                                                  🧠 {lead.experience}
-                                              </span>
-                                          </div>
-                                      </td>
-
-                                      <td className="p-4 max-w-[200px]">
-                                          <p className="text-xs text-slate-400 truncate" title={lead.goal}>
-                                              {lead.goal}
-                                          </p>
-                                      </td>
-
-                                      <td className="p-4 text-right">
-                                          <div className="flex items-center justify-end gap-2">
-                                              <button
-                                                onClick={() => openWhatsApp(lead)}
-                                                className="p-2 bg-brand-green/10 text-brand-green border border-brand-green/30 rounded hover:bg-brand-green hover:text-brand-dark transition-all"
-                                                title="Enviar WhatsApp"
-                                              >
-                                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                                              </button>
-
-                                              {lead.status !== 'converted' && (
-                                                <button
-                                                    onClick={() => updateStatus(lead.id, 'converted')}
-                                                    className="p-2 bg-brand-gold/10 text-brand-gold border border-brand-gold/30 rounded hover:bg-brand-gold hover:text-brand-dark transition-all"
-                                                    title="Marcar como Convertido (Venta)"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                                                </button>
-                                              )}
-
-                                              {lead.status !== 'lost' && (
-                                                <button 
-                                                    onClick={() => updateStatus(lead.id, 'lost')}
-                                                    className="p-2 bg-slate-800 text-slate-500 border border-slate-700 rounded hover:bg-red-500 hover:text-white transition-all"
-                                                    title="Marcar como Perdido"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                                </button>
-                                              )}
-                                          </div>
-                                      </td>
-                                  </tr>
-                              ))
-                          )}
-                      </tbody>
-                  </table>
-              </div>
-
-              {totalPages > 1 && (
-                  <div className="p-4 border-t border-white/10 flex justify-between items-center bg-[#05080f]">
-                      <button 
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
-                        className="text-xs text-slate-400 hover:text-white disabled:opacity-50"
-                      >
-                          &larr; Anterior
-                      </button>
-                      <span className="text-xs font-mono text-slate-500">Página {currentPage} de {totalPages}</span>
-                      <button 
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                        disabled={currentPage === totalPages}
-                        className="text-xs text-slate-400 hover:text-white disabled:opacity-50"
-                      >
-                          Siguiente &rarr;
-                      </button>
-                  </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {[
+            { label: 'Total Leads', val: leads.length, color: 'text-white' },
+            { label: 'Nuevos', val: leads.filter(l => l.status === 'new').length, color: 'text-blue-400' },
+            { label: 'Contactados', val: leads.filter(l => l.status === 'contacted').length, color: 'text-brand-gold' },
+            { label: 'Cierre (Convertidos)', val: leads.filter(l => l.status === 'converted').length, color: 'text-brand-green' },
+          ].map((stat, i) => (
+            <div key={i} className="bg-[#0B101B] border border-white/5 p-4 rounded-lg">
+              <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">{stat.label}</p>
+              {loading ? (
+                <div className="h-8 w-12 bg-white/10 rounded animate-pulse mt-1"></div>
+              ) : (
+                <p className={`text-2xl font-mono font-bold ${stat.color}`}>{stat.val}</p>
               )}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-6">
+          {['all', 'new', 'contacted', 'converted', 'lost'].map(status => (
+            <button
+              key={status}
+              onClick={() => { setFilterStatus(status); setCurrentPage(1); }}
+              className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border transition-all ${filterStatus === status
+                ? 'bg-brand-gold text-brand-dark border-brand-gold'
+                : 'bg-transparent text-slate-500 border-white/10 hover:border-white/30 hover:text-white'
+                }`}
+            >
+              {status === 'all' ? 'Todos' : status}
+            </button>
+          ))}
+        </div>
+
+        <div className="bg-[#0B101B] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-white/5 text-[10px] uppercase tracking-widest text-slate-500 font-bold border-b border-white/10">
+                  <th className="p-4">Estado</th>
+                  <th className="p-4">Fecha</th>
+                  <th className="p-4">Lead</th>
+                  <th className="p-4">Perfil (Cap / Exp)</th>
+                  <th className="p-4">Objetivo</th>
+                  <th className="p-4 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 text-sm">
+                {loading ? (
+                  [...Array(5)].map((_, i) => (
+                    <tr key={`skeleton-${i}`} className="animate-pulse">
+                      <td className="p-4">
+                        <div className="h-5 w-16 bg-white/10 rounded"></div>
+                      </td>
+                      <td className="p-4">
+                        <div className="h-4 w-14 bg-white/10 rounded mb-1"></div>
+                        <div className="h-3 w-10 bg-white/5 rounded"></div>
+                      </td>
+                      <td className="p-4">
+                        <div className="h-4 w-28 bg-white/10 rounded mb-1"></div>
+                        <div className="h-3 w-24 bg-brand-gold/20 rounded"></div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="h-5 w-32 bg-white/5 rounded"></div>
+                          <div className="h-5 w-24 bg-white/5 rounded"></div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="h-4 w-36 bg-white/5 rounded"></div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex justify-end gap-2">
+                          <div className="h-8 w-8 bg-white/5 rounded"></div>
+                          <div className="h-8 w-8 bg-white/5 rounded"></div>
+                          <div className="h-8 w-8 bg-white/5 rounded"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : paginatedLeads.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-slate-500">No hay leads en esta vista.</td>
+                  </tr>
+                ) : (
+                  paginatedLeads.map((lead) => (
+                    <tr key={lead.id} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="p-4">
+                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${getStatusColor(lead.status)}`}>
+                          {lead.status}
+                        </span>
+                      </td>
+
+                      <td className="p-4 text-slate-400 font-mono text-xs whitespace-nowrap">
+                        {new Date(lead.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                        <br />
+                        {new Date(lead.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+
+                      <td className="p-4">
+                        <div className="font-bold text-white flex items-center gap-2">
+                          <div className="relative group/flag inline-block cursor-help">
+                            <span className="text-lg leading-none">{getCountryByPhone(lead.phone).flag}</span>
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover/flag:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-xl border border-white/10">
+                              {getCountryByPhone(lead.phone).name}
+                            </div>
+                          </div>
+                          {lead.name}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <div className="text-xs text-brand-gold font-mono">{lead.phone.replace(/^'/, '').startsWith('+') ? '' : '+'}{lead.phone.replace(/^'/, '')}</div>
+                          <button
+                            onClick={() => {
+                              const fullPhone = (lead.phone.replace(/^'/, '').startsWith('+') ? '' : '+') + lead.phone.replace(/^'/, '');
+                              navigator.clipboard.writeText(fullPhone);
+                            }}
+                            className="text-slate-500 hover:text-brand-gold transition-colors p-1 rounded hover:bg-white/5 active:scale-90"
+                            title="Copiar número"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                          </button>
+                        </div>
+                      </td>
+
+                      <td className="p-4">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs text-slate-300 bg-white/5 px-2 py-0.5 rounded border border-white/10 w-fit">
+                            💰 {lead.capital}
+                          </span>
+                          <span className="text-xs text-slate-300 bg-white/5 px-2 py-0.5 rounded border border-white/10 w-fit">
+                            🧠 {lead.experience}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="p-4 max-w-[200px]">
+                        <p className="text-xs text-slate-400 truncate" title={lead.goal}>
+                          {lead.goal}
+                        </p>
+                      </td>
+
+                      <td className="p-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => openWhatsApp(lead)}
+                            className="p-2 bg-brand-green/10 text-brand-green border border-brand-green/30 rounded hover:bg-brand-green hover:text-brand-dark transition-all"
+                            title="Enviar WhatsApp"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" /></svg>
+                          </button>
+
+                          {lead.status !== 'converted' && (
+                            <button
+                              onClick={() => updateStatus(lead.id, 'converted')}
+                              className="p-2 bg-brand-gold/10 text-brand-gold border border-brand-gold/30 rounded hover:bg-brand-gold hover:text-brand-dark transition-all"
+                              title="Marcar como Convertido (Venta)"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                            </button>
+                          )}
+
+                          {lead.status !== 'lost' && (
+                            <button
+                              onClick={() => updateStatus(lead.id, 'lost')}
+                              className="p-2 bg-slate-800 text-slate-500 border border-slate-700 rounded hover:bg-red-500 hover:text-white transition-all"
+                              title="Marcar como Perdido"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
+
+          {totalPages > 1 && (
+            <div className="p-4 border-t border-white/10 flex justify-between items-center bg-[#05080f]">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="text-xs text-slate-400 hover:text-white disabled:opacity-50"
+              >
+                &larr; Anterior
+              </button>
+              <span className="text-xs font-mono text-slate-500">Página {currentPage} de {totalPages}</span>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="text-xs text-slate-400 hover:text-white disabled:opacity-50"
+              >
+                Siguiente &rarr;
+              </button>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
