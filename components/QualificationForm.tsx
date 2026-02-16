@@ -107,10 +107,29 @@ export const QualificationForm: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         let value = e.target.value;
-        // Ensure phone always starts with "+"
-        if (e.target.name === 'phone' && !value.startsWith('+')) {
-            value = '+' + value.replace(/\+/g, '');
+
+        // Special handling for phone input
+        if (e.target.name === 'phone') {
+            // Extract the country prefix from current formData.phone (e.g., "+57 ")
+            const currentPhone = formData.phone;
+            const prefixMatch = currentPhone.match(/^\+\d{1,3}\s/);
+            const countryPrefix = prefixMatch ? prefixMatch[0] : '+';
+
+            // Prevent deletion of the country prefix
+            if (!value.startsWith(countryPrefix)) {
+                value = countryPrefix;
+            }
+
+            // Extract only the part after the prefix
+            const numberPart = value.substring(countryPrefix.length);
+
+            // Remove all non-digit characters from the number part
+            const cleanedNumber = numberPart.replace(/\D/g, '');
+
+            // Reconstruct the phone with prefix + cleaned number
+            value = countryPrefix + cleanedNumber;
         }
+
         setFormData({ ...formData, [e.target.name]: value });
     };
 
@@ -545,7 +564,8 @@ export const QualificationForm: React.FC = () => {
                                             </div>
 
                                             <div className="space-y-1">
-                                                <label className="text-xs text-slate-500 font-bold ml-1 uppercase">WhatsApp (Con código de país)</label>
+                                                <label className="text-xs text-slate-500 font-bold ml-1 uppercase">Tu número de WhatsApp</label>
+                                                <p className="text-[10px] text-slate-400 ml-1 mb-2">Colocar tu número sin prefijo de país (el prefijo ya está incluido)</p>
                                                 <div className="relative group">
                                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
                                                         <span className="text-xl">{flag}</span>
@@ -555,7 +575,7 @@ export const QualificationForm: React.FC = () => {
                                                         type="tel" name="phone"
                                                         value={formData.phone} onChange={handleChange}
                                                         className="w-full bg-[#080A10] border border-white/10 rounded-xl pl-16 pr-4 py-4 text-white text-sm focus:border-brand-gold focus:ring-1 focus:ring-brand-gold/50 outline-none transition-all font-mono placeholder:text-slate-600"
-                                                        placeholder="+52 123 456 7890"
+                                                        placeholder="3001234567"
                                                     />
                                                 </div>
                                             </div>
