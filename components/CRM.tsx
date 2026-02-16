@@ -56,15 +56,66 @@ export const CRM: React.FC = () => {
   const [authError, setAuthError] = useState('');
 
   const CRM_PASSWORD = process.env.CRM_PASSWORD || 'capitalbtc2025';
+  const AUTH_STORAGE_KEY = 'capital_btc_crm_auth';
+  const AUTH_DURATION = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+
+  // Verificar sesión guardada al cargar el componente
+  useEffect(() => {
+    const checkStoredAuth = () => {
+      try {
+        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (stored) {
+          const authData = JSON.parse(stored);
+          const now = Date.now();
+
+          // Verificar si la sesión no ha expirado
+          if (authData.expiresAt && now < authData.expiresAt) {
+            setIsAuthenticated(true);
+            console.log('[CRM] Sesión restaurada desde localStorage');
+          } else {
+            // Sesión expirada, limpiar
+            localStorage.removeItem(AUTH_STORAGE_KEY);
+            console.log('[CRM] Sesión expirada, se requiere nuevo login');
+          }
+        }
+      } catch (e) {
+        console.error('[CRM] Error al verificar sesión guardada:', e);
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+      }
+    };
+
+    checkStoredAuth();
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === CRM_PASSWORD) {
+      const expiresAt = Date.now() + AUTH_DURATION;
+
+      // Guardar sesión en localStorage
+      try {
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
+          authenticated: true,
+          expiresAt,
+          timestamp: Date.now()
+        }));
+        console.log('[CRM] Sesión guardada. Expira en 24 horas.');
+      } catch (e) {
+        console.error('[CRM] Error al guardar sesión:', e);
+      }
+
       setIsAuthenticated(true);
       setAuthError('');
+      setPassword(''); // Limpiar el campo de contraseña por seguridad
     } else {
       setAuthError('Contraseña incorrecta');
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    setIsAuthenticated(false);
+    console.log('[CRM] Sesión cerrada');
   };
 
   const MOCK_LEADS: Lead[] = [
@@ -127,7 +178,7 @@ export const CRM: React.FC = () => {
       capital: String(row.Capital || row.capital || ''),
       experience: String(row.Experiencia || row.experiencia || row.experience || ''),
       goal: String(row.Objetivo || row.objetivo || row.goal || ''),
-      status: (row.Status || row.status || row.Estado || row.estado || 'new') as Lead['status'],
+      status: String(row.Status || row.status || row.Estado || row.estado || 'new').toLowerCase() as Lead['status'],
     };
   };
 
@@ -181,25 +232,53 @@ export const CRM: React.FC = () => {
   };
 
   const updateStatus = async (id: string, newStatus: Lead['status']) => {
+    // Actualiza localmente primero (UI optimista)
     setLeads(prev => prev.map(l => l.id === id ? { ...l, status: newStatus } : l));
 
-    if (!GOOGLE_SCRIPT_URL) return;
+    if (!GOOGLE_SCRIPT_URL) {
+      console.log('[DEV] Actualización de status (solo local):', { id, newStatus });
+      return;
+    }
+
+    const payload = {
+      action: 'update',
+      id: id,
+      field: 'status',
+      value: newStatus
+    };
+
+    console.log('[CRM] Enviando actualización a Google Sheets:', payload);
 
     try {
-      await fetch(GOOGLE_SCRIPT_URL, {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'update',
-          id: id,
-          field: 'status',
-          value: newStatus
-        })
+        body: JSON.stringify(payload)
       });
+
+      // Intenta leer la respuesta
+      const responseText = await response.text();
+      console.log('[CRM] Respuesta de Google Sheets:', responseText);
+
+      try {
+        const result = JSON.parse(responseText);
+        if (result.success === false) {
+          console.error('[CRM] Error reportado por Google Sheets:', result.error);
+          throw new Error(result.error || 'Error desconocido al actualizar');
+        }
+        console.log('[CRM] ✓ Status actualizado exitosamente en Google Sheets');
+      } catch (parseError) {
+        // Si no es JSON, pero la respuesta fue 200, considerarlo éxito
+        if (response.ok) {
+          console.log('[CRM] ✓ Actualización enviada (respuesta no-JSON pero OK)');
+        } else {
+          throw parseError;
+        }
+      }
     } catch (error) {
-      console.error("Error updating status:", error);
-      alert("Error al sincronizar cambio de estado.");
+      console.error('[CRM] ✗ Error al sincronizar con Google Sheets:', error);
+      // No mostramos alerta al usuario porque la UI ya se actualizó optimísticamente
+      // Solo logueamos para debugging
     }
   };
 
@@ -449,6 +528,16 @@ export const CRM: React.FC = () => {
                 viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-lg border border-red-500/30 text-red-400 hover:text-white hover:bg-red-500/20 hover:border-red-500/50 transition-all"
+              title="Cerrar Sesión"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
             </button>
           </div>
