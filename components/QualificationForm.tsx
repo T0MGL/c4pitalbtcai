@@ -374,7 +374,7 @@ export const QualificationForm: React.FC = () => {
                                     </p>
                                 </div>
                                 <a
-                                    href="https://wa.me/573218720045?text=Tengo%20capital%20para%20iniciar%2C%20necesito%20prioridad%20con%20mi%20licencia."
+                                    href="https://wa.me/573185287540?text=Tengo%20capital%20para%20iniciar%2C%20necesito%20prioridad%20con%20mi%20licencia."
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="group flex items-center justify-center gap-2 w-full py-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/15 hover:border-emerald-500/50 transition-all duration-300 mb-3"
