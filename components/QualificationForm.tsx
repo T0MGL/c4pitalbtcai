@@ -158,6 +158,14 @@ export const QualificationForm: React.FC = () => {
         trackDownsellActivated();
     };
 
+    const WHATSAPP_NUMBER = '573185287540';
+
+    const openWhatsAppWithLeadData = (name: string) => {
+        const message = `Mi nombre es ${name}, tengo capital para invertir, quiero mi licencia ya.`;
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
+    };
+
     const handleSubmit = async () => {
         if (!formData.name || !formData.phone) {
             return alert('Por favor completa tus datos de contacto.');
@@ -189,6 +197,7 @@ export const QualificationForm: React.FC = () => {
             await new Promise(r => setTimeout(r, 1500));
             setIsSuccess(true);
             setIsSubmitting(false);
+            openWhatsAppWithLeadData(formData.name);
 
             // Track successful form submission (dev mode)
             trackFormSubmission({
@@ -209,6 +218,7 @@ export const QualificationForm: React.FC = () => {
             });
             await new Promise(r => setTimeout(r, 1500));
             setIsSuccess(true);
+            openWhatsAppWithLeadData(formData.name);
 
             // Track successful form submission (production mode)
             trackFormSubmission({

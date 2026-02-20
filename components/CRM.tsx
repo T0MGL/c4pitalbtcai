@@ -236,7 +236,7 @@ export const CRM: React.FC = () => {
     setLeads(prev => prev.map(l => l.id === id ? { ...l, status: newStatus } : l));
 
     if (!GOOGLE_SCRIPT_URL) {
-      console.log('[DEV] Actualización de status (solo local):', { id, newStatus });
+      console.log('[DEV] Actualización de status (solo local en modo dev):', { id, newStatus });
       return;
     }
 
@@ -250,9 +250,10 @@ export const CRM: React.FC = () => {
     console.log('[CRM] Enviando actualización a Google Sheets:', payload);
 
     try {
+      // IMPORTANTE: Sin Content-Type: application/json para evitar el preflight CORS
+      // que Google Apps Script no soporta. El body llega igual como text/plain.
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
